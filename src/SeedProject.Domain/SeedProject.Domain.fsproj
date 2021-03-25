@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Common.fs" />
+    <Compile Include="Person.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SeedProject.Persistence.Model\SeedProject.Persistence.Model.csproj" />
+  </ItemGroup>
+</Project>
