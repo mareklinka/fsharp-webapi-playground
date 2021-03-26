@@ -7,7 +7,5 @@ namespace SeedProject.Persistence.Model
         public DatabaseContext(DbContextOptions options) : base(options)
         {
         }
-
-        public DbSet<PersonEntity> People => Set<PersonEntity>();
     }
 }

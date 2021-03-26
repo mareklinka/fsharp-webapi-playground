@@ -3,7 +3,7 @@
     <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Person.fs" />
+    <Compile Include="Db.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SeedProject.Persistence.Model\SeedProject.Persistence.Model.csproj" />

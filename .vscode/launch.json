@@ -12,7 +12,7 @@
             "program": "${workspaceFolder}/src/SeedProject.App/bin/Debug/net5.0/SeedProject.App.dll",
             "args": [],
             "cwd": "${workspaceFolder}/src/SeedProject.App",
-            "console": "internalConsole",
+            "console": "externalTerminal",
             "stopAtEntry": false
         }
     ]

@@ -1,37 +1,54 @@
-open SeedProject.Persistence.Model
-open SeedProject.Domain.Person
-open SeedProject.Persistence.Person
-open Microsoft.EntityFrameworkCore
+open System
 open System.Threading
+open Microsoft.EntityFrameworkCore
+open SeedProject.Persistence
+open SeedProject.Persistence.Model
+open SeedProject.Domain.Common
+open SeedProject.Domain.AbsenceRequests
+open SeedProject.Domain
 
 let CreateContextOptions =
     let builder = new DbContextOptionsBuilder<DatabaseContext>()
-    builder.UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Integrated Security=true;Database=FSharpSeedDatabase") |> ignore
-    builder.Options
+    builder.UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Integrated Security=true;Database=FSharpSeedDatabase")
+    |> ignore
 
-let CreateContext (options: DbContextOptions<DatabaseContext>) =
-    new DatabaseContext(options)
+    fun () -> builder.Options
 
-let MigrateDatabase (context: DatabaseContext) =
-    async {
-        do! context.Database.MigrateAsync() |> Async.AwaitTask
-    }
+let CreateContext (options: DbContextOptions<DatabaseContext>) = new DatabaseContext(options)
+
+let LifetimeScope<'a when 'a : not struct> (factory: unit -> 'a) =
+    let instance = factory()
+
+    match box instance with
+    | :? System.IDisposable as disposable -> (fun () -> instance), disposable
+    | _ -> (fun () -> instance), { new System.IDisposable with member __.Dispose() = () }
+
 
 [<EntryPoint>]
 let main argv =
-    use context = CreateContext CreateContextOptions
-    let createPerson = AddPerson context
-    let getPeople = GetPeople context
+    let (dbContextProvider, disposer) = CreateContextOptions >> CreateContext |> LifetimeScope
+    use d = disposer
 
     async {
-        do! context |> MigrateDatabase
+        do!
+            dbContextProvider()
+            |> Db.migrateDatabase CancellationToken.None
 
-        { FirstName = FirstName "Marek"; LastName = LastName "Linka" } |> createPerson
+        let! t =
+            dbContextProvider()
+            |> Db.beginTransaction CancellationToken.None
 
-        do! context.SaveChangesAsync(CancellationToken.None) |> Async.AwaitTask |> Async.Ignore
-        let! people = getPeople CancellationToken.None
+        do! t |> Db.commit CancellationToken.None
 
-        printf "%A" people
-    } |> Async.RunSynchronously
+        let request : AbsenceRequestType =
+            HolidayRequest
+                { HolidayRequest.Id = Id 1
+                  Start = FullDay DateTime.Today
+                  End = HalfDay(DateTime.Today.AddDays(5.).Date)
+                  Description = Description "My test description" }
+
+        request |> Formatter.FormatAbsenceRequest |> printf "%s"
+    }
+    |> Async.RunSynchronously
 
     0
