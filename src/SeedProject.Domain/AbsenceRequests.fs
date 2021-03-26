@@ -89,6 +89,11 @@ module AbsenceRequests =
     type ApprovedAbsenceRequest = Approved of AbsenceRequestType
     type RejectedAbsenceRequest = Rejected of AbsenceRequestType
 
+    type AbsenceRequest =
+        | NewRequest of NewAbsenceRequest
+        | ApprovedRequest of ApprovedAbsenceRequest
+        | RejectedRequest of RejectedAbsenceRequest
+
     type ApproveRequestFunction = NewAbsenceRequest -> ApprovedAbsenceRequest
     type RejectRequestFunction = NewAbsenceRequest -> RejectedAbsenceRequest
 
@@ -148,4 +153,16 @@ module AbsenceRequests =
             updated, updated <> r
 
 
+[<RequireQualifiedAccess>]
+module RequestDuration =
+    open AbsenceRequests
 
+    let create (decimal:decimal) =
+        let shifted = decimal * 10M
+        let whole = System.Math.Truncate(shifted)
+        let remainder = whole % 10M
+
+        match (shifted = whole, remainder) with
+        | (true, 0M) -> OperationResult.fromResult (Hour (System.Math.Truncate(decimal) |> int), Full)
+        | (true, 5M) -> OperationResult.fromResult (Hour (System.Math.Truncate(decimal) |> int), Half)
+        | _ -> OperationResult.validationError (OutOfRange, ValidationMessage "Invalid duration specified")

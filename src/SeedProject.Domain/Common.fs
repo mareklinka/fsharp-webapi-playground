@@ -5,18 +5,14 @@ module Common =
 
     type ValidationErrorCode =
         | OutOfRange
-        | EmptyField
+        | IncompleteData
         | InvalidFormat
-    type ValidationErrorMessage = Message of string
+    type ValidationErrorMessage = ValidationMessage of string
     type ValidationError = ValidationErrorCode * ValidationErrorMessage
 
     type OperationErrorCode =
-        | SomeError
-        | SomeOtherError
-    type OperationErrorMessage = Message of string
+        | ApprovalOfRejectedRequest
+        | RejectionOfApprovedRequest
+        | UpdateForbidden
+    type OperationErrorMessage = OperationMessage of string
     type OperationError = OperationErrorCode * OperationErrorMessage
-
-    type OperationResult<'a> =
-        | Success of 'a
-        | ValidationError of ValidationError
-        | OperationError of OperationError

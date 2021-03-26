@@ -6,7 +6,7 @@ open SeedProject.Domain.AbsenceRequests
 module Formatter =
     type private TableRow = string * string * string * string * string
 
-    let private concatCells ((col1, col2, col3, col4, col5): TableRow)=
+    let private concatCells ((col1, col2, col3, col4, col5): TableRow) =
         seq {col1; col2; col3; col4; col5} |> Seq.map (fun c -> sprintf "<td>%s</td>" c) |> String.concat "" |> sprintf "<tr>%s</tr>"
 
     let private formatDate (date: DateTime) = date.ToString("dd.MM.yyyy")

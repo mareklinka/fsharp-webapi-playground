@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="AbsenceRequests.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SeedProject.Domain\SeedProject.Domain.fsproj" />
+    <ProjectReference Include="..\SeedProject.Persistence\SeedProject.Persistence.fsproj" />
+  </ItemGroup>
+
+</Project>

@@ -27,7 +27,7 @@ let LifetimeScope<'a when 'a : not struct> (factory: unit -> 'a) =
 [<EntryPoint>]
 let main argv =
     let (dbContextProvider, disposer) = CreateContextOptions >> CreateContext |> LifetimeScope
-    use d = disposer
+    use disposer = disposer
 
     async {
         do!
@@ -37,6 +37,8 @@ let main argv =
         let! t =
             dbContextProvider()
             |> Db.beginTransaction CancellationToken.None
+
+        use t = t
 
         do! t |> Db.commit CancellationToken.None
 
