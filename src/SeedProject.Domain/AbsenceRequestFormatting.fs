@@ -1,7 +1,7 @@
 namespace SeedProject.Domain
 
 open System
-open SeedProject.Domain.AbsenceRequests
+open SeedProject.Domain.AbsenceRequests.Types
 
 module Formatter =
     type private TableRow = string * string * string * string * string
@@ -33,7 +33,7 @@ module Formatter =
         | Moving -> "Moving"
         | BloodDonation -> "Blood donation"
 
-    let FormatAbsenceRequest r =
+    let formatAbsenceRequest r =
         match r with
         | HolidayRequest { Start = s; End = e; Description = Description d } ->
             (   "Holiday",

@@ -5,7 +5,9 @@
   <ItemGroup>
     <Compile Include="Common.fs" />
     <Compile Include="OperationResult.fs" />
+    <Compile Include="Operators.fs" />
     <Compile Include="AbsenceRequests.fs" />
+    <Compile Include="Constructors.fs" />
     <Compile Include="AbsenceRequestFormatting.fs" />
   </ItemGroup>
   <ItemGroup>

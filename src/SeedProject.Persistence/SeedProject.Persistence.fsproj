@@ -4,6 +4,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Db.fs" />
+    <Compile Include="AbsenceRequests.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SeedProject.Persistence.Model\SeedProject.Persistence.Model.csproj" />

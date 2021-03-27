@@ -7,5 +7,7 @@ namespace SeedProject.Persistence.Model
         public DatabaseContext(DbContextOptions options) : base(options)
         {
         }
+
+        public DbSet<AbsenceRequest> AbsenceRequests { get; set; }
     }
 }

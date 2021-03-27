@@ -1,55 +1,88 @@
 open System
 open System.Threading
-open Microsoft.EntityFrameworkCore
+
 open SeedProject.Persistence
-open SeedProject.Persistence.Model
+open SeedProject.Persistence.AbsenceRequests
 open SeedProject.Domain.Common
-open SeedProject.Domain.AbsenceRequests
 open SeedProject.Domain
+open SeedProject.Domain.Operators
 
-let CreateContextOptions =
-    let builder = new DbContextOptionsBuilder<DatabaseContext>()
-    builder.UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Integrated Security=true;Database=FSharpSeedDatabase")
-    |> ignore
+open SeedProject.App.DependencyInjection
+open SeedProject.App.RequestPipeline
+open SeedProject.Domain.AbsenceRequests.Types
 
-    fun () -> builder.Options
+let private operation =
+    OperationResult.OperationResultBuilder.Instance
 
-let CreateContext (options: DbContextOptions<DatabaseContext>) = new DatabaseContext(options)
+let handleRequestUpdate (context: RequestContext<SeedProject.WebApi.AbsenceRequests.Types.UpdateData, AbsenceRequest>) =
+    printf "Handling request"
+    async {
+        let loadById = context.Database |> getSingleRequest
 
-let LifetimeScope<'a when 'a : not struct> (factory: unit -> 'a) =
-    let instance = factory()
+        let! result =
+            context.Input.Id
+            |> loadById
+            >>= SeedProject.WebApi.AbsenceRequests.Operations.updateRequest context.Input
+            >>= saveAndCommit context
 
-    match box instance with
-    | :? System.IDisposable as disposable -> (fun () -> instance), disposable
-    | _ -> (fun () -> instance), { new System.IDisposable with member __.Dispose() = () }
+        let context = { context with Result = Some result }
 
+        return operation {
+            return context
+        }
+    }
+
+let migrateDatabase =
+    async {
+        let (dbContextProvider, disposer) =
+            CreateContextOptions
+            >> CreateContext
+            |> LifetimeScope
+
+        use disposer = disposer
+
+        do!
+            dbContextProvider ()
+            |> Db.migrateDatabase CancellationToken.None
+    }
+
+
+let readPayload () : Async<OperationResult.OperationResult<SeedProject.WebApi.AbsenceRequests.Types.UpdateData>> =
+    async {
+        return
+            operation {
+                //return! OperationResult.validationError (IncompleteData, ValidationMessage "some error message")
+                return
+                    { SeedProject.WebApi.AbsenceRequests.Types.UpdateData.Id = Id 1
+                      SeedProject.WebApi.AbsenceRequests.Types.UpdateData.StartDate = DateTime.Now.Date
+                      SeedProject.WebApi.AbsenceRequests.Types.UpdateData.EndDate = Some(DateTime.Now.Date.AddDays(-1.))
+                      SeedProject.WebApi.AbsenceRequests.Types.UpdateData.HalfDayStart = Some true
+                      SeedProject.WebApi.AbsenceRequests.Types.UpdateData.HalfDayEnd = Some false
+                      SeedProject.WebApi.AbsenceRequests.Types.UpdateData.Description = "This is my description"
+                      SeedProject.WebApi.AbsenceRequests.Types.UpdateData.Duration = None
+                      SeedProject.WebApi.AbsenceRequests.Types.UpdateData.PersonalDayType = None }
+            }
+    }
 
 [<EntryPoint>]
 let main argv =
-    let (dbContextProvider, disposer) = CreateContextOptions >> CreateContext |> LifetimeScope
-    use disposer = disposer
-
     async {
+        do! migrateDatabase
+
+        let (dbContextProvider, disposer) =
+            CreateContextOptions
+            >> CreateContext
+            |> LifetimeScope
+
+        use disposer = disposer
+
+        // todo: handle exceptions
+
         do!
-            dbContextProvider()
-            |> Db.migrateDatabase CancellationToken.None
-
-        let! t =
-            dbContextProvider()
-            |> Db.beginTransaction CancellationToken.None
-
-        use t = t
-
-        do! t |> Db.commit CancellationToken.None
-
-        let request : AbsenceRequestType =
-            HolidayRequest
-                { HolidayRequest.Id = Id 1
-                  Start = FullDay DateTime.Today
-                  End = HalfDay(DateTime.Today.AddDays(5.).Date)
-                  Description = Description "My test description" }
-
-        request |> Formatter.FormatAbsenceRequest |> printf "%s"
+            buildRequestContext readPayload
+            >>= handleRequestUpdate
+            |> cleanup
+            |> respond
     }
     |> Async.RunSynchronously
 
