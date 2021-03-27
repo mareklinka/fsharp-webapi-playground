@@ -7,47 +7,45 @@ open SeedProject.Domain.Common
 open SeedProject.Domain
 open SeedProject.Domain.Operators
 
-open SeedProject.App.DependencyInjection
-open SeedProject.App.RequestPipeline
+open SeedProject.App
 open SeedProject.Domain.AbsenceRequests.Types
+open SeedProject.WebApi.AbsenceRequests.Types
 
 let private operation =
     OperationResult.OperationResultBuilder.Instance
 
-let handleRequestUpdate (context: RequestContext<SeedProject.WebApi.AbsenceRequests.Types.UpdateData, AbsenceRequest>) =
-    printf "Handling request"
+let handleRequestUpdate (context: Request.RequestContext<UpdateData, AbsenceRequest>) =
+    printfn "Handling request"
+
     async {
         let loadById = context.Database |> getSingleRequest
 
-        let! result =
+        let! operationTask =
             context.Input.Id
             |> loadById
             >>= SeedProject.WebApi.AbsenceRequests.Operations.updateRequest context.Input
-            >>= saveAndCommit context
+            >>= Request.saveAndCommit context
 
-        let context = { context with Result = Some result }
-
-        return operation {
-            return context
-        }
+        return
+            operation {
+                let! result = operationTask
+                return { context with Result = Some result }
+            }
     }
 
 let migrateDatabase =
     async {
-        let (dbContextProvider, disposer) =
-            CreateContextOptions
-            >> CreateContext
-            |> LifetimeScope
-
-        use disposer = disposer
+        use context =
+            DependencyInjection.createContextOptions ()
+            |> DependencyInjection.createContext
 
         do!
-            dbContextProvider ()
+            context
             |> Db.migrateDatabase CancellationToken.None
     }
 
 
-let readPayload () : Async<OperationResult.OperationResult<SeedProject.WebApi.AbsenceRequests.Types.UpdateData>> =
+let readPayload () : Async<OperationResult.OperationResult<UpdateData>> =
     async {
         return
             operation {
@@ -55,7 +53,7 @@ let readPayload () : Async<OperationResult.OperationResult<SeedProject.WebApi.Ab
                 return
                     { SeedProject.WebApi.AbsenceRequests.Types.UpdateData.Id = Id 1
                       SeedProject.WebApi.AbsenceRequests.Types.UpdateData.StartDate = DateTime.Now.Date
-                      SeedProject.WebApi.AbsenceRequests.Types.UpdateData.EndDate = Some(DateTime.Now.Date.AddDays(-1.))
+                      SeedProject.WebApi.AbsenceRequests.Types.UpdateData.EndDate = Some(DateTime.Now.Date.AddDays(1.))
                       SeedProject.WebApi.AbsenceRequests.Types.UpdateData.HalfDayStart = Some true
                       SeedProject.WebApi.AbsenceRequests.Types.UpdateData.HalfDayEnd = Some false
                       SeedProject.WebApi.AbsenceRequests.Types.UpdateData.Description = "This is my description"
@@ -69,21 +67,13 @@ let main argv =
     async {
         do! migrateDatabase
 
-        let (dbContextProvider, disposer) =
-            CreateContextOptions
-            >> CreateContext
-            |> LifetimeScope
-
-        use disposer = disposer
-
-        // todo: handle exceptions
-
         do!
-            buildRequestContext readPayload
-            >>= handleRequestUpdate
-            |> cleanup
-            |> respond
+            Request.run
+                (fun () -> Request.buildRequestContext readPayload)
+                (fun context -> context |> handleRequestUpdate |> Request.respond)
     }
     |> Async.RunSynchronously
+
+    printfn "'s all good"
 
     0

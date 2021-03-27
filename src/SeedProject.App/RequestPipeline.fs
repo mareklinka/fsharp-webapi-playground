@@ -5,8 +5,9 @@ open SeedProject.Domain.Common
 open Microsoft.EntityFrameworkCore
 open SeedProject.Persistence.Model
 
+[<RequireQualifiedAccess>]
 module DependencyInjection =
-    let CreateContextOptions =
+    let createContextOptions =
         let builder =
             new DbContextOptionsBuilder<DatabaseContext>()
 
@@ -15,22 +16,10 @@ module DependencyInjection =
 
         fun () -> builder.Options
 
-    let CreateContext (options: DbContextOptions<DatabaseContext>) = new DatabaseContext(options)
+    let createContext (options: DbContextOptions<DatabaseContext>) = new DatabaseContext(options)
 
-    let LifetimeScope<'a when 'a: not struct> (factory: unit -> 'a) =
-        let instance = factory ()
-
-        match box instance with
-        | :? System.IDisposable as disposable -> (fun () -> instance), disposable
-        | _ ->
-            (fun () -> instance),
-            { new System.IDisposable with
-                member __.Dispose() = () }
-
-    type DbContextLifetimeScope = unit -> DatabaseContext
-
-module RequestPipeline =
-    open DependencyInjection
+[<RequireQualifiedAccess>]
+module Request =
     open Microsoft.EntityFrameworkCore.Storage
     open SeedProject.Persistence
     open System.Threading
@@ -38,71 +27,97 @@ module RequestPipeline =
     let private operation =
         OperationResult.OperationResultBuilder.Instance
 
-    type RequestContext<'a, 'b when 'a : not struct> =
-        {
-            Database: DatabaseContext;
-            Input: 'a;
-            Transaction: IDbContextTransaction;
-            CancellationToken: CancellationToken;
-            Result: Option<OperationResult.OperationResult<'b>>
-        }
+    type RequestContext<'a, 'b> =
+        { Database: DatabaseContext
+          Input: 'a
+          Transaction: IDbContextTransaction
+          CancellationToken: CancellationToken
+          Result: Option<'b> }
 
-    let respond result =
+    let respond resultTask =
         async {
-            let! r = result
+            let! result = resultTask
 
-            match r with
-            | Some opResult ->
-                match opResult with
-                | OperationResult.Success _ -> printf "Absence request updated"
-                | OperationResult.ValidationError (code, ValidationMessage message) ->
-                    printf "Validation error %A: %s" code message
-                | OperationResult.OperationError (code, OperationMessage message) ->
-                    printf "Operation error %A: %s" code message
-            | None ->
-                printf "Operation termianted without a result"
+            match result with
+            | OperationResult.Success context ->
+                match context.Result with
+                | Some _ -> printfn "Absence request updated"
+                | None -> printfn "Operation termianted without a result"
+            | OperationResult.ValidationError (code, ValidationMessage message) ->
+                printfn "Validation error %A: %s" code message
+            | OperationResult.OperationError (code, OperationMessage message) ->
+                printfn "Operation error %A: %s" code message
+
             ()
         }
 
-    let cleanup operationResultTask =
+    let respondWithValidationError (code, ValidationMessage message) =
         async {
-            let! operationResult = operationResultTask
-            printf "Cleaning up..."
-
-            let actualResult =
-                match operationResult with
-                | OperationResult.Success context ->
-                    context.Transaction.Dispose()
-                    context.Database.Dispose()
-                    context.Result
-                | _ -> None
-
-            printf "Cleanup done..."
-            return actualResult
+            printfn "Validation error %A: %s" code message
+            ()
         }
 
-    let buildRequestContext<'a, 'b when 'a : not struct and 'b : not struct> requestReader =
+    let respondWithOperationError (code, OperationMessage message) =
         async {
-            let database = (CreateContextOptions >> CreateContext)()
-            let cts = new CancellationTokenSource();
+            printfn "Validation error %A: %s" code message
+            ()
+        }
+
+    let buildRequestContext requestReader =
+        async {
+            let database =
+                DependencyInjection.createContextOptions ()
+                |> DependencyInjection.createContext
+
+            let cts = new CancellationTokenSource()
             let! t = Db.beginTransaction cts.Token database
-            let! readerResult = requestReader();
+            let! readerResult = requestReader ()
 
-            return operation {
-                let! requestReaderValue = readerResult
-                let context: RequestContext<'a, 'b>  = { RequestContext.Database = database; Input = requestReaderValue; Transaction = t; CancellationToken = cts.Token; Result = None }
-                return context
-            }
+            return
+                operation {
+                    let! requestReaderValue = readerResult
+
+                    let context : RequestContext<'a, 'b> =
+                        { RequestContext.Database = database
+                          Input = requestReaderValue
+                          Transaction = t
+                          CancellationToken = cts.Token
+                          Result = None }
+
+                    return context
+                }
         }
 
-    let saveAndCommit (context: RequestContext<_, _>) r =
+    let run contextBuilder handler =
+        async {
+            try
+                let! contextBuildResult = contextBuilder ()
+
+                match contextBuildResult with
+                | OperationResult.Success context ->
+                    try
+                        do! context |> handler
+                    finally
+                        printfn "Context cleanup..."
+                        context.Database.Dispose()
+                        context.Transaction.Dispose()
+                        printfn "Cleanup done..."
+                | OperationResult.ValidationError (code, message) ->
+                    do! respondWithValidationError (code, message)
+                | OperationResult.OperationError (code, message) ->
+                    do! respondWithOperationError (code, message)
+            with e -> printfn "%s" (e.ToString())
+        }
+
+    let saveAndCommit context r =
         async {
             do!
                 context.Database
                 |> Db.saveChanges CancellationToken.None
 
-            do! context.Transaction |> Db.commit CancellationToken.None
+            do!
+                context.Transaction
+                |> Db.commit CancellationToken.None
 
             return operation { return r }
         }
-
