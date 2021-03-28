@@ -19,16 +19,16 @@ module AbsenceRequests =
 
     let getSingleRequest
         (db: DatabaseContext)
+        (ct)
         (Id id)
         : Async<OperationResult.OperationResult<AbsenceRequests.Types.AbsenceRequest>> =
 
         async {
-            printfn "DB: Loading from storage"
             let! request =
                 db
                     .AbsenceRequests
                     .AsNoTracking()
-                    .SingleOrDefaultAsync(fun r -> r.Id = id)
+                    .SingleOrDefaultAsync((fun r -> r.Id = id), ct)
                 |> Async.AwaitTask
 
             return
@@ -68,10 +68,9 @@ module AbsenceRequests =
 
     let updateRequestEntity
         (db: DatabaseContext)
-        (request)
+        request
         : Async<OperationResult.OperationResult<AbsenceRequests.Types.AbsenceRequest>> =
         async {
-            printfn "DB: Storing updated request"
             let requestContent = request |> unwrapRequest
 
             let entityUpdate =

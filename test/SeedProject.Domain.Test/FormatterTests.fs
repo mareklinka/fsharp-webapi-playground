@@ -3,6 +3,7 @@ namespace SeedProject.Domain.Tests
 module FormatterTests =
     open FsCheck.Xunit
     open SeedProject.Domain
+    open SeedProject.Domain.AbsenceRequests
     open System.Text.RegularExpressions
 
     [<Property>]

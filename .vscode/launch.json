@@ -5,13 +5,13 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": ".NET Core Launch (console)",
+            "name": ".NET Core Launch (web)",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/src/SeedProject.App/bin/Debug/net5.0/SeedProject.App.dll",
+            "program": "${workspaceFolder}/src/SeedProject.Host/bin/Debug/net5.0/SeedProject.Host.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/src/SeedProject.App",
+            "cwd": "${workspaceFolder}/src/SeedProject.Host",
             "console": "externalTerminal",
             "stopAtEntry": false
         }

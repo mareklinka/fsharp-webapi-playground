@@ -12,11 +12,14 @@ module Common =
 
     type InvariantType =
     | HolidayRequestMustHaveEndDate
+    | RouteParameterMissing
+    | RouteParameterInvalid
 
     type OperationErrorCode =
         | ApprovalOfRejectedRequest
         | RejectionOfApprovedRequest
         | UpdateForbidden
+        | AggregateError
         | NotFound of DatabaseId
         | InvariantBroken of InvariantType
 

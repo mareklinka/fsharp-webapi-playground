@@ -52,3 +52,18 @@ module HolidayDatePair =
                 return { HolidayDatePair.Start = (HolidayDate.create s isHalfStart); End = (HolidayDate.create e isHalfEnd) }
             | _ -> return! OperationResult.validationError (OutOfRange, ValidationMessage "Invalid date pair specified")
         }
+
+[<RequireQualifiedAccess>]
+module DatabaseId =
+    open SeedProject.Domain
+    open SeedProject.Domain.Common
+
+    let private operation =
+        OperationResult.OperationResultBuilder.Instance
+
+    let create (id: int) =
+        operation {
+            match id with
+            | i when i > 0 -> return Id i
+            | _ -> return! OperationResult.validationError (OutOfRange, ValidationMessage "Invalid database id specified")
+        }
