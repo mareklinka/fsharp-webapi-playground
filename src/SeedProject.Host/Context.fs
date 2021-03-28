@@ -15,37 +15,34 @@ module Context =
     let private operation =
         OperationResult.OperationResultBuilder.Instance
 
-    module Database =
-        let resolve (context: HttpContext) =
-            context.RequestServices.GetRequiredService<DatabaseContext>()
+    let cancellationToken (context: HttpContext) = context.RequestAborted
 
-        let save context r =
+    module Database =
+        let resolve (db: HttpContext) =
+            db.RequestServices.GetRequiredService<DatabaseContext>()
+
+        let save db ct r =
             async {
                 do!
-                    context
-                    |> resolve
-                    |> Db.saveChanges context.RequestAborted
+                    Db.saveChanges ct db
 
                 return operation { return r }
             }
 
-        let commit (context: HttpContext) r =
+        let commit (db: DatabaseContext) ct r =
             async {
-                let db = context |> resolve
-
                 match db.Database.CurrentTransaction with
                 | null -> ()
-                | t -> do! t |> Db.commit context.RequestAborted
+                | t ->
+                    do! t |> Db.commit ct
 
                 return operation { return r }
             }
 
-        let beginTransaction (context: HttpContext) r =
+        let beginTransaction (db: DatabaseContext) ct r =
             async {
-                let db = context |> resolve
-
                 do!
-                    db.Database.BeginTransactionAsync(context.RequestAborted)
+                    db.Database.BeginTransactionAsync(ct)
                     |> Async.AwaitTask
                     |> Async.Ignore
 

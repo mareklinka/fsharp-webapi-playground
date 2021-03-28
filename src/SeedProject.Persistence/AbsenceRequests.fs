@@ -19,7 +19,7 @@ module AbsenceRequests =
 
     let getSingleRequest
         (db: DatabaseContext)
-        (ct)
+        ct
         (Id id)
         : Async<OperationResult.OperationResult<AbsenceRequests.Types.AbsenceRequest>> =
 

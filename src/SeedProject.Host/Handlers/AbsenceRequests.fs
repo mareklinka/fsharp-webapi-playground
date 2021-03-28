@@ -18,22 +18,6 @@ module Handlers =
 
     [<RequireQualifiedAccess>]
     module AbsenceRequests =
-        let private parseId = Context.Route.readInt "id"
-
-        let private toDatabaseId : (int -> Async<OperationResult.OperationResult<DatabaseId>>) =
-            fun i -> async { return operation { return! DatabaseId.create i } }
-
-        let private loadById context =
-            context
-            |> Context.Database.resolve
-            |> getSingleRequest
-            <| context.RequestAborted
-
-        let private store context =
-            context
-            |> Context.Database.resolve
-            |> updateRequestEntity
-
         type AbsenceRequestModel =
             { Id: int
               StartDate: DateTime
@@ -52,59 +36,78 @@ module Handlers =
               Duration: Option<decimal>
               PersonalDayType: Option<PersonalDayType> }
 
-        let private unwrapRequest request =
-            match request with
-            | NewRequest (New r) -> r
-            | ApprovedRequest (Approved r) -> r
-            | RejectedRequest (Rejected r) -> r
+        module Private =
+            let parseId = Context.Route.readInt "id"
 
-        let private transformer value =
-            match unwrapRequest value with
-            | HolidayRequest { Id = Id id
-                               Start = s
-                               End = e
-                               Description = Description d } ->
-                let (startDate, isStartHalf) = s |> HolidayDate.extract
-                let (endDate, isEndHalf) = e |> HolidayDate.extract
+            let toDatabaseId : (int -> Async<OperationResult.OperationResult<DatabaseId>>) =
+                fun i -> async { return operation { return! DatabaseId.create i } }
 
-                { AbsenceRequestModel.Id = id
-                  StartDate = startDate
-                  EndDate = Some(endDate)
-                  HalfDayStart = Some(isStartHalf)
-                  HalfDayEnd = Some(isEndHalf)
-                  Description = d }
-            | _ ->
-                { AbsenceRequestModel.Id = 0
-                  StartDate = DateTime.Today
-                  EndDate = None
-                  HalfDayStart = None
-                  HalfDayEnd = None
-                  Description = "" }
+            let loadById context =
+                context
+                |> Context.Database.resolve
+                |> getSingleRequest
+                <| context.RequestAborted
 
-        let private validate (inputTask: Async<UpdateDataInputModel>) =
-            async {
-                let! input = inputTask
+            let store context =
+                context
+                |> Context.Database.resolve
+                |> updateRequestEntity
 
-                return
-                    operation {
-                        match input.StartDate with
-                        | Some startDate ->
-                            return
-                                { AbsenceRequestOperations.UpdateData.Description = input.Description
-                                  AbsenceRequestOperations.UpdateData.Duration = input.Duration
-                                  AbsenceRequestOperations.UpdateData.StartDate = startDate
-                                  AbsenceRequestOperations.UpdateData.EndDate = input.EndDate
-                                  AbsenceRequestOperations.UpdateData.HalfDayStart = input.HalfDayStart
-                                  AbsenceRequestOperations.UpdateData.HalfDayEnd = input.HalfDayEnd
-                                  AbsenceRequestOperations.UpdateData.PersonalDayType = input.PersonalDayType }
-                        | None ->
-                            return!
-                                OperationResult.validationError (
-                                    IncompleteData,
-                                    ValidationMessage "Start date is missing"
-                                )
-                    }
-            }
+            let unwrapRequest request =
+                match request with
+                | NewRequest (New r) -> r
+                | ApprovedRequest (Approved r) -> r
+                | RejectedRequest (Rejected r) -> r
+
+            let transformer value =
+                match unwrapRequest value with
+                | HolidayRequest { Id = Id id
+                                   Start = s
+                                   End = e
+                                   Description = Description d } ->
+                    let (startDate, isStartHalf) = s |> HolidayDate.extract
+                    let (endDate, isEndHalf) = e |> HolidayDate.extract
+
+                    { AbsenceRequestModel.Id = id
+                      StartDate = startDate
+                      EndDate = Some(endDate)
+                      HalfDayStart = Some(isStartHalf)
+                      HalfDayEnd = Some(isEndHalf)
+                      Description = d }
+                | _ ->
+                    { AbsenceRequestModel.Id = 0
+                      StartDate = DateTime.Today
+                      EndDate = None
+                      HalfDayStart = None
+                      HalfDayEnd = None
+                      Description = "" }
+
+            let validate (inputTask: Async<UpdateDataInputModel>) =
+                async {
+                    let! input = inputTask
+
+                    return
+                        operation {
+                            match input.StartDate with
+                            | Some startDate ->
+                                return
+                                    { AbsenceRequestOperations.UpdateData.Description = input.Description
+                                      AbsenceRequestOperations.UpdateData.Duration = input.Duration
+                                      AbsenceRequestOperations.UpdateData.StartDate = startDate
+                                      AbsenceRequestOperations.UpdateData.EndDate = input.EndDate
+                                      AbsenceRequestOperations.UpdateData.HalfDayStart = input.HalfDayStart
+                                      AbsenceRequestOperations.UpdateData.HalfDayEnd = input.HalfDayEnd
+                                      AbsenceRequestOperations.UpdateData.PersonalDayType = input.PersonalDayType }
+                            | None ->
+                                return!
+                                    OperationResult.validationError (
+                                        IncompleteData,
+                                        ValidationMessage "Start date is missing"
+                                    )
+                        }
+                }
+
+        open Private
 
         let getRequest (context: HttpContext) =
             parseId
@@ -121,13 +124,16 @@ module Handlers =
             let readId =
                 parseId
                 >=> toDatabaseId
-                >=> Context.Database.beginTransaction context
+                >=> Context.Database.beginTransaction (Context.Database.resolve context) (Context.cancellationToken context)
                 >=> loadById context
+
+            let db = Context.Database.resolve context
+            let ct = Context.cancellationToken context
 
             readId >=< readInputModel
             >=> AbsenceRequestOperations.updateRequest
             >=> store context
-            >=> Context.Database.save context
-            >=> Context.Database.commit context
+            >=> Context.Database.save db ct
+            >=> Context.Database.commit db ct
             >=> Context.ResponseBody.ok context
             <| context
