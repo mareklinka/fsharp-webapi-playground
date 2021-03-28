@@ -97,6 +97,7 @@ module AbsenceRequests =
 
         let updateRequest data request =
             async {
+                printfn "DOMAIN: Updating absence request"
                 return operation {
                     match request with
                     | NewRequest (New r) ->

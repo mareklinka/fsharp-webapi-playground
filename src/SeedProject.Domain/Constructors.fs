@@ -31,6 +31,11 @@ module HolidayDate =
         else
             FullDay date
 
+    let extract date =
+        match date with
+            | FullDay date -> date, false
+            | HalfDay date -> date, true
+
 [<RequireQualifiedAccess>]
 module HolidayDatePair =
     open SeedProject.Domain.Common

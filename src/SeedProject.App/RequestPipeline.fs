@@ -34,6 +34,8 @@ module Request =
           CancellationToken: CancellationToken
           Result: Option<'b> }
 
+    let private writeResponse = printfn "API RESPONSE: %s"
+
     let respond resultTask =
         async {
             let! result = resultTask
@@ -41,25 +43,25 @@ module Request =
             match result with
             | OperationResult.Success context ->
                 match context.Result with
-                | Some _ -> printfn "Absence request updated"
-                | None -> printfn "Operation termianted without a result"
+                | Some _ -> writeResponse "OK"
+                | None -> writeResponse "OK - No result"
             | OperationResult.ValidationError (code, ValidationMessage message) ->
-                printfn "Validation error %A: %s" code message
+                writeResponse (sprintf "Validation error %A: %s" code message)
             | OperationResult.OperationError (code, OperationMessage message) ->
-                printfn "Operation error %A: %s" code message
+                writeResponse (sprintf "Operation error %A: %s" code message)
 
             ()
         }
 
     let respondWithValidationError (code, ValidationMessage message) =
         async {
-            printfn "Validation error %A: %s" code message
+            writeResponse (sprintf "Validation error %A: %s" code message)
             ()
         }
 
     let respondWithOperationError (code, OperationMessage message) =
         async {
-            printfn "Validation error %A: %s" code message
+            writeResponse (sprintf "Validation error %A: %s" code message)
             ()
         }
 
@@ -98,26 +100,12 @@ module Request =
                     try
                         do! context |> handler
                     finally
-                        printfn "Context cleanup..."
+                        printfn "RUNNER: Request context cleanup"
                         context.Database.Dispose()
                         context.Transaction.Dispose()
-                        printfn "Cleanup done..."
                 | OperationResult.ValidationError (code, message) ->
                     do! respondWithValidationError (code, message)
                 | OperationResult.OperationError (code, message) ->
                     do! respondWithOperationError (code, message)
             with e -> printfn "%s" (e.ToString())
-        }
-
-    let saveAndCommit context r =
-        async {
-            do!
-                context.Database
-                |> Db.saveChanges CancellationToken.None
-
-            do!
-                context.Transaction
-                |> Db.commit CancellationToken.None
-
-            return operation { return r }
         }

@@ -33,3 +33,5 @@ module public Db =
         async { do! transaction.CommitAsync(ct) |> Async.AwaitTask }
 
     let set<'a when 'a: not struct> (context: DbContext) = context.Set<'a>()
+
+    let attach<'a when 'a: not struct> (context: DbContext) entity = entity |> context.Set<'a>().Attach
