@@ -1,14 +1,16 @@
 namespace SeedProject.Persistence
 
+open Microsoft.EntityFrameworkCore
+
 open SeedProject.Infrastructure.Common
 open SeedProject.Infrastructure
 open SeedProject.Domain
 open SeedProject.Domain.AbsenceRequests.Types
 open SeedProject.Persistence.Model
-open Microsoft.EntityFrameworkCore
 open SeedProject.Domain.Constructors
 
-module AbsenceRequests =
+[<RequireQualifiedAccess>]
+module AbsenceRequestPersistence =
     let private operation =
         OperationResult.OperationResultBuilder.Instance
 

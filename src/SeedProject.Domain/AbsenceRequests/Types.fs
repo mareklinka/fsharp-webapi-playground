@@ -64,7 +64,7 @@ module Types =
         {
             Id: DatabaseId;
             Start: DateTime;
-            End: Option<DateTime>;
+            End: DateTime option;
             Description: DescriptionText;
         }
 
@@ -72,7 +72,7 @@ module Types =
         {
             Id: DatabaseId;
             Start: DateTime;
-            End: Option<DateTime>;
+            End: DateTime option;
             Description: DescriptionText;
         }
 
@@ -98,7 +98,7 @@ module Types =
     type RejectRequestFunction = NewAbsenceRequest -> RejectedAbsenceRequest
 
     type HolidayDatePair = { Start: HolidayDate; End: HolidayDate }
-    type SicknessDatePair = { Start: DateTime; End: Option<DateTime> }
+    type SicknessDatePair = { Start: DateTime; End: DateTime option }
     type HolidayUpdateData = HolidayDatePair * DescriptionText
     type PersonalDayUpdateData = DateTime * DescriptionText * PersonalDayType
     type DurationAbsenceUpdateData = DateTime * DescriptionText * RequestDuration

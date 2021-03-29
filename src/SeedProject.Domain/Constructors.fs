@@ -67,3 +67,5 @@ module DatabaseId =
             | i when i > 0 -> return Id i
             | _ -> return! OperationResult.validationError (OutOfRange, ValidationMessage "Invalid database id specified")
         }
+
+    let createAsync (id: int) = async { return create id }

@@ -12,8 +12,6 @@ module Common =
 
     type InvariantType =
     | HolidayRequestMustHaveEndDate
-    | RouteParameterMissing
-    | RouteParameterInvalid
 
     type OperationErrorCode =
         | ApprovalOfRejectedRequest
@@ -25,3 +23,31 @@ module Common =
 
     type OperationErrorMessage = OperationMessage of string
     type OperationError = OperationErrorCode * OperationErrorMessage
+
+    module Rendering =
+        let private renderValidationCode code =
+            match code with
+            | OutOfRange -> nameof(OutOfRange)
+            | IncompleteData -> nameof(IncompleteData)
+            | InvalidFormat -> nameof(InvalidFormat)
+
+        let private renderInvariant invariant =
+            match invariant with
+            | HolidayRequestMustHaveEndDate -> nameof(HolidayRequestMustHaveEndDate)
+
+        let private renderOperationCode code =
+            match code with
+            | ApprovalOfRejectedRequest -> (nameof(ApprovalOfRejectedRequest), None)
+            | RejectionOfApprovedRequest -> (nameof(RejectionOfApprovedRequest), None)
+            | UpdateForbidden -> (nameof(UpdateForbidden), None)
+            | AggregateError -> (nameof(AggregateError), None)
+            | NotFound (Id id) -> ($"{nameof(NotFound)}", $"{id}" |> Some)
+            | InvariantBroken invariant -> (nameof(InvariantBroken), invariant |> renderInvariant |> Some)
+
+        let Validation (code, ValidationMessage message) =
+            {| Code = code |> renderValidationCode; Message = message |}
+
+        let Operation (code, OperationMessage message) =
+            let (code, additionalInfo) = renderOperationCode code
+            {| Code = code; Message = message; AdditionalInfo = additionalInfo |}
+

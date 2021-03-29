@@ -10,7 +10,7 @@ module Formatter =
         seq {col1; col2; col3; col4; col5} |> Seq.map (fun c -> sprintf "<td>%s</td>" c) |> String.concat "" |> sprintf "<tr>%s</tr>"
 
     let private formatDate (date: DateTime) = date.ToString("dd.MM.yyyy")
-    let private formatOptionalDate (date: Option<DateTime>) =
+    let private formatOptionalDate (date: DateTime option) =
         match date with
         | Some d -> d |> formatDate
         | None -> "-"

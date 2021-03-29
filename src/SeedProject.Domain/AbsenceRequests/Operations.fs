@@ -11,12 +11,12 @@ module AbsenceRequestOperations =
     type UpdateData =
         {
           StartDate: DateTime
-          EndDate: Option<DateTime>
-          HalfDayStart: Option<bool>
-          HalfDayEnd: Option<bool>
+          EndDate: DateTime option
+          HalfDayStart: bool option
+          HalfDayEnd: bool option
           Description: string
-          Duration: Option<decimal>
-          PersonalDayType: Option<PersonalDayType> }
+          Duration: decimal option
+          PersonalDayType: PersonalDayType option }
 
     let approveNewRequest : ApproveRequestFunction = fun (New r) -> Approved r
     let rejectNewRequest : RejectRequestFunction = fun (New r) -> Rejected r
@@ -130,7 +130,6 @@ module AbsenceRequestOperations =
 
     let updateRequest (request, data) =
         async {
-            printfn "DOMAIN: Updating absence request"
             return operation {
                 match request with
                 | NewRequest (New r) ->

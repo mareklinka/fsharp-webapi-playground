@@ -1,7 +1,18 @@
 namespace SeedProject.Host
+open Giraffe
 
 [<RequireQualifiedAccess>]
 module Routing =
-    let routes =
-        [ ("/api/absencerequest/{id:int}", [ "GET" ], Handlers.AbsenceRequests.getRequest);
-          ("/api/absencerequest/{id:int}", [ "PATCH" ], Handlers.AbsenceRequests.updateRequest) ]
+    let webApp : HttpHandler =
+      choose [
+          subRouteCi "/api"
+            (choose [
+              subRouteCi "/AbsenceRequest"
+                (choose [
+                  GET >=> routef "/%i" (fun id -> Handlers.AbsenceRequests.GetRequest.handler id)
+                  PATCH >=> routef "/%i" (fun id ->
+                    bindJson<Handlers.AbsenceRequests.UpdateRequest.UpdateDataInputModel> (fun model ->
+                      Handlers.AbsenceRequests.UpdateRequest.handler id model))
+                ])
+            ])
+      ]

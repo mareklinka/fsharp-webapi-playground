@@ -13,5 +13,7 @@ module Logging =
 
     [<RequireQualifiedAccess>]
     module SemanticLog =
-        let myFancyLogMessage (writer: Types.LogSink) =
-            writer  "My fancy log message" Types.Information
+        let absenceRequestUpdated (writer: Types.LogSink) id =
+            writer $"Absence request with ID {id} has been updated" Types.Information
+        let absenceRequestRetrieved (writer: Types.LogSink) id =
+            writer $"Retrieving absence request with ID {id}" Types.Information
