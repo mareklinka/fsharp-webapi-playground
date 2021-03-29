@@ -1,4 +1,4 @@
-namespace SeedProject.Domain
+namespace SeedProject.Infrastructure
 
 [<RequireQualifiedAccess>]
 module OperationResult =

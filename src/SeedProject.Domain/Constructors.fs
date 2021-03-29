@@ -2,8 +2,8 @@ namespace SeedProject.Domain.Constructors
 
 [<RequireQualifiedAccess>]
 module RequestDuration =
-    open SeedProject.Domain
-    open SeedProject.Domain.Common
+    open SeedProject.Infrastructure.Common
+    open SeedProject.Infrastructure
     open SeedProject.Domain.AbsenceRequests.Types
 
     let private operation =
@@ -38,8 +38,8 @@ module HolidayDate =
 
 [<RequireQualifiedAccess>]
 module HolidayDatePair =
-    open SeedProject.Domain.Common
-    open SeedProject.Domain
+    open SeedProject.Infrastructure.Common
+    open SeedProject.Infrastructure
     open SeedProject.Domain.AbsenceRequests.Types
 
     let private operation =
@@ -55,8 +55,8 @@ module HolidayDatePair =
 
 [<RequireQualifiedAccess>]
 module DatabaseId =
-    open SeedProject.Domain
-    open SeedProject.Domain.Common
+    open SeedProject.Infrastructure.Common
+    open SeedProject.Infrastructure
 
     let private operation =
         OperationResult.OperationResultBuilder.Instance

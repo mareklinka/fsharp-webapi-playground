@@ -1,4 +1,4 @@
-namespace SeedProject.Domain
+namespace SeedProject.Infrastructure
 
 module Common =
     type DatabaseId = Id of int

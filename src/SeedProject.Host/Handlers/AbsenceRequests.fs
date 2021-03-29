@@ -3,13 +3,15 @@ namespace SeedProject.Host
 open System
 open Microsoft.AspNetCore.Http
 
+open SeedProject.Infrastructure.Common
+open SeedProject.Infrastructure
+open SeedProject.Infrastructure.Operators
 open SeedProject.Domain
-open SeedProject.Domain.Common
-open SeedProject.Domain.Operators
 open SeedProject.Domain.AbsenceRequests.Types
 
 open SeedProject.Persistence.AbsenceRequests
 open SeedProject.Domain.Constructors
+open SeedProject.Infrastructure.Logging
 
 [<RequireQualifiedAccess>]
 module Handlers =
@@ -37,7 +39,9 @@ module Handlers =
               PersonalDayType: Option<PersonalDayType> }
 
         module Private =
-            let parseId = Context.Route.readInt "id"
+            let parseId loggerFactory =
+                "parseId" |> loggerFactory |> SemanticLog.myFancyLogMessage
+                Context.Route.readInt "id"
 
             let toDatabaseId : (int -> Async<OperationResult.OperationResult<DatabaseId>>) =
                 fun i -> async { return operation { return! DatabaseId.create i } }
@@ -47,11 +51,6 @@ module Handlers =
                 |> Context.Database.resolve
                 |> getSingleRequest
                 <| context.RequestAborted
-
-            let store context =
-                context
-                |> Context.Database.resolve
-                |> updateRequestEntity
 
             let unwrapRequest request =
                 match request with
@@ -109,30 +108,30 @@ module Handlers =
 
         open Private
 
-        let getRequest (context: HttpContext) =
-            parseId
+        let getRequest (context: HttpContext) lf =
+            parseId lf
             >=> toDatabaseId
             >=> loadById context
             >=> Context.ResponseBody.okWith context transformer
             <| context
 
-        let updateRequest (context: HttpContext) =
+        let updateRequest (context: HttpContext) lf =
             let readInputModel =
                 Context.RequestBody.readAs<UpdateDataInputModel>
                 >> validate
 
             let readId =
-                parseId
+                parseId lf
                 >=> toDatabaseId
-                >=> Context.Database.beginTransaction (Context.Database.resolve context) (Context.cancellationToken context)
                 >=> loadById context
 
             let db = Context.Database.resolve context
             let ct = Context.cancellationToken context
 
             readId >=< readInputModel
+            >=> Context.Database.beginTransaction db ct
             >=> AbsenceRequestOperations.updateRequest
-            >=> store context
+            >=> updateRequestEntity db
             >=> Context.Database.save db ct
             >=> Context.Database.commit db ct
             >=> Context.ResponseBody.ok context

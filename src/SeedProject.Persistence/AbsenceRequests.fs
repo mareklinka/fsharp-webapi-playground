@@ -1,7 +1,8 @@
 namespace SeedProject.Persistence
 
+open SeedProject.Infrastructure.Common
+open SeedProject.Infrastructure
 open SeedProject.Domain
-open SeedProject.Domain.Common
 open SeedProject.Domain.AbsenceRequests.Types
 open SeedProject.Persistence.Model
 open Microsoft.EntityFrameworkCore

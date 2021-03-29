@@ -3,9 +3,6 @@
     <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Common.fs" />
-    <Compile Include="OperationResult.fs" />
-    <Compile Include="Operators.fs" />
     <Compile Include="AbsenceRequests/Types.fs" />
     <Compile Include="Constructors.fs" />
     <Compile Include="AbsenceRequests/Operations.fs" />
@@ -13,5 +10,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SeedProject.Persistence.Model\SeedProject.Persistence.Model.csproj" />
+    <ProjectReference Include="..\SeedProject.Infrastructure\SeedProject.Infrastructure.fsproj" />
   </ItemGroup>
 </Project>

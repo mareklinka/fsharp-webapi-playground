@@ -1,6 +1,5 @@
-namespace SeedProject.Domain
+namespace SeedProject.Infrastructure
 
-open SeedProject.Domain
 open Common
 
 module Operators =

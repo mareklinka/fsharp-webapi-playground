@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Common.fs" />
+    <Compile Include="OperationResult.fs" />
+    <Compile Include="Operators.fs" />
+    <Compile Include="Logging.fs" />
+  </ItemGroup>
+</Project>

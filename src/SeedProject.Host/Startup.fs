@@ -12,14 +12,15 @@ open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Hosting
 
 open SeedProject.Persistence.Model
-open SeedProject.Domain
-open SeedProject.Domain.Common
+open SeedProject.Infrastructure.Common
+open SeedProject.Infrastructure
 
 type Startup(configuration: IConfiguration) =
     let runHandler handler =
         fun (c: HttpContext) ->
             async {
-                let! result = handler c
+                let lf = c |> Context.loggerFactory
+                let! result = handler c lf
                 match result with
                 | OperationResult.Success _ -> ()
                 | OperationResult.ValidationError (code, ValidationMessage message) ->
@@ -33,6 +34,8 @@ type Startup(configuration: IConfiguration) =
     // This method gets called by the runtime. Use this method to add services to the container.
     member this.ConfigureServices(services: IServiceCollection) =
         services.AddAuthorization() |> ignore
+
+        services.AddMvcCore().AddJsonOptions(fun o -> o.JsonSerializerOptions.Converters.Add(Context.optionConverter)) |> ignore
 
         services.AddDbContext<DatabaseContext>
             (fun options ->

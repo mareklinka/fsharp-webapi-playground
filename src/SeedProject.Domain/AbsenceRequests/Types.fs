@@ -1,7 +1,7 @@
 namespace SeedProject.Domain.AbsenceRequests
 
 open System
-open SeedProject.Domain.Common
+open SeedProject.Infrastructure.Common
 
 module Types =
     type HolidayDate =

@@ -19,6 +19,8 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "SeedProject.Host", "src\See
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "SeedProject.Host.Test", "test\SeedProject.Host.Test\SeedProject.Host.Test.fsproj", "{394068C3-735C-46FA-A375-7580ECF9E607}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "SeedProject.Infrastructure", "src\SeedProject.Infrastructure\SeedProject.Infrastructure.fsproj", "{A5B2EDA5-C1CC-48CF-965B-03938C6A3E1C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -49,6 +51,10 @@ Global
 		{394068C3-735C-46FA-A375-7580ECF9E607}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{394068C3-735C-46FA-A375-7580ECF9E607}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{394068C3-735C-46FA-A375-7580ECF9E607}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5B2EDA5-C1CC-48CF-965B-03938C6A3E1C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5B2EDA5-C1CC-48CF-965B-03938C6A3E1C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5B2EDA5-C1CC-48CF-965B-03938C6A3E1C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5B2EDA5-C1CC-48CF-965B-03938C6A3E1C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -60,6 +66,7 @@ Global
 		{BA48932F-1EDD-49B1-B9CE-FF32B22BE0DE} = {48652035-CA2E-45A5-ADBE-8F789B9E81F2}
 		{ED13A057-3628-4A21-A04F-0D1A680403A3} = {0783D9CE-20AD-425B-A486-5D2B0FBA51B9}
 		{394068C3-735C-46FA-A375-7580ECF9E607} = {48652035-CA2E-45A5-ADBE-8F789B9E81F2}
+		{A5B2EDA5-C1CC-48CF-965B-03938C6A3E1C} = {0783D9CE-20AD-425B-A486-5D2B0FBA51B9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {370E1AFE-2822-47DC-B79B-89E02076D8EB}

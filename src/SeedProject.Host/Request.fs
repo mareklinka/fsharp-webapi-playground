@@ -1,7 +1,7 @@
 namespace SeedProject.Host
 
-open SeedProject.Domain
-open SeedProject.Domain.Common
+open SeedProject.Infrastructure.Common
+open SeedProject.Infrastructure
 open Microsoft.AspNetCore.Http
 
 [<RequireQualifiedAccess>]

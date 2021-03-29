@@ -3,8 +3,8 @@
 open System
 
 open AbsenceRequests.Types
-open SeedProject.Domain.Common
-open SeedProject.Domain
+open SeedProject.Infrastructure.Common
+open SeedProject.Infrastructure
 open SeedProject.Domain.Constructors
 
 module AbsenceRequestOperations =

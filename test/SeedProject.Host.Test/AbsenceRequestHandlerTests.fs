@@ -1,8 +1,8 @@
 namespace SeedProject.Host.Tests
 
 open FsCheck.Xunit
-open SeedProject.Domain.Common
-open SeedProject.Domain
+open SeedProject.Infrastructure.Common
+open SeedProject.Infrastructure
 
 module HelperMethods =
 
