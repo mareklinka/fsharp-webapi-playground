@@ -1,5 +1,6 @@
 namespace SeedProject.Host
 
+open FSharp.Control.Tasks
 open System.Threading
 
 open Microsoft.AspNetCore.Hosting
@@ -13,7 +14,7 @@ module Program =
     let exitCode = 0
 
     let private migrateDb (scopeFactory: IServiceScopeFactory) =
-        async {
+        task {
             use scope = scopeFactory.CreateScope()
             do!
                 scope.ServiceProvider.GetRequiredService<DatabaseContext>()
@@ -29,14 +30,16 @@ module Program =
     let main args =
         let host = CreateHostBuilder(args).Build()
 
-        async {
-            let scopeFactory =
-                host.Services.GetRequiredService<IServiceScopeFactory>()
+        let serverTask =
+            task {
+                let scopeFactory =
+                    host.Services.GetRequiredService<IServiceScopeFactory>()
 
-            do! migrateDb scopeFactory
+                do! migrateDb scopeFactory
 
-            do! host.RunAsync() |> Async.AwaitTask
-        }
-        |> Async.RunSynchronously
+                do! host.RunAsync()
+            }
+
+        serverTask.Wait()
 
         exitCode

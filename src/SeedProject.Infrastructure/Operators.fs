@@ -1,16 +1,18 @@
 namespace SeedProject.Infrastructure
 
+open System.Threading.Tasks
+open FSharp.Control.Tasks
 open Common
 
-type private M<'a> = Async<OperationResult.OperationResult<'a>>
+type private M<'a> = Task<OperationResult.OperationResult<'a>>
 type OperationStep<'a, 'b> = 'a -> M<'b>
 
 module Operators =
-    let private bind (f : OperationStep<_, _>) (a : M<_>) : M<_> = async {
+    let private bind (f : OperationStep<_, _>) (a : M<_>) : M<_> = task {
         let! r = a
         match r with
         | OperationResult.Success value ->
-            let next : Async<OperationResult.OperationResult<'b>> = f value
+            let next = f value
             return! next
         | OperationResult.ValidationError (code, message) -> return OperationResult.ValidationError (code, message)
         | OperationResult.OperationError (code, message) -> return OperationResult.OperationError (code, message)
@@ -21,7 +23,7 @@ module Operators =
 
     let private combine (f : OperationStep<'a, 'b>) (g : OperationStep<'c, 'd>) =
         fun ((a, c): 'a * 'c) ->
-            async {
+            task {
                 let! fResult = f a
                 let! gResult = g c
 
@@ -39,14 +41,14 @@ module Operators =
                         OperationResult.operationError (AggregateError, OperationMessage "Multiple errors occured")
             }
 
-    let private tap (f : OperationStep<'a, 'b>) (g: 'b -> Async<'c>) =
+    let private tap (f : OperationStep<'a, 'b>) (g: 'b -> Task<unit>) =
         fun a ->
-            async {
+            task {
                 let! fResult = f a
 
                 match fResult with
                 | OperationResult.Success fVal ->
-                    do! g fVal |> Async.Ignore
+                    do! g fVal
                 | _ -> ()
 
                 return fResult
@@ -54,7 +56,7 @@ module Operators =
 
     let private terminate (f : OperationStep<'a, 'b>) (g: 'b -> 'c) (h: SerializationModel -> 'c) =
         fun a ->
-            async {
+            task {
                 let! fResult = f a
 
                 match fResult with
@@ -62,7 +64,7 @@ module Operators =
                         return g value
                     | OperationResult.ValidationError ve -> return (ve |> Rendering.Validation |> h)
                     | OperationResult.OperationError oe -> return (oe |> Rendering.Operation |> h)
-            } |> Async.StartAsTask
+            }
 
     let ( >>= ) a f = bind f a
     let ( &=> ) f g = compose f g

@@ -1,10 +1,11 @@
 namespace SeedProject.Persistence
 
+open FSharp.Control.Tasks
+
 open Microsoft.EntityFrameworkCore
 
 open SeedProject.Infrastructure.Common
 open SeedProject.Infrastructure
-open SeedProject.Domain
 open SeedProject.Domain.AbsenceRequests.Types
 open SeedProject.Persistence.Model
 open SeedProject.Domain.Constructors
@@ -20,19 +21,13 @@ module AbsenceRequestPersistence =
         | ApprovedRequest (Approved r) -> r
         | RejectedRequest (Rejected r) -> r
 
-    let getSingleRequest
-        (db: DatabaseContext)
-        ct
-        (Id id)
-        : Async<OperationResult.OperationResult<AbsenceRequests.Types.AbsenceRequest>> =
-
-        async {
+    let getSingleRequest (db: DatabaseContext) ct (Id id) =
+        task {
             let! request =
                 db
                     .AbsenceRequests
                     .AsNoTracking()
                     .SingleOrDefaultAsync((fun r -> r.Id = id), ct)
-                |> Async.AwaitTask
 
             return
                 operation {
@@ -69,11 +64,8 @@ module AbsenceRequestPersistence =
                 }
         }
 
-    let updateRequestEntity
-        (db: DatabaseContext)
-        request
-        : Async<OperationResult.OperationResult<AbsenceRequests.Types.AbsenceRequest>> =
-        async {
+    let updateRequestEntity (db: DatabaseContext) request =
+        task {
             let requestContent = request |> unwrapRequest
 
             let entityUpdate =

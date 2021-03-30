@@ -1,5 +1,7 @@
 namespace SeedProject.Host
 
+open FSharp.Control.Tasks
+
 open Microsoft.AspNetCore.Http
 open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Logging
@@ -34,7 +36,7 @@ module Context =
 
 
     let asOperation f value =
-        async {
+        task {
             return
                 value |> f |> OperationResult.fromResult
         }
@@ -46,29 +48,23 @@ module Context =
         let resolve = resolve<DatabaseContext>
 
         let save db ct r =
-            async {
-                do!
-                    Db.saveChanges ct db
-
+            task {
+                do! Db.saveChanges ct db
                 return operation { return r }
             }
 
         let commit (db: DatabaseContext) ct r =
-            async {
+            task {
                 match db.Database.CurrentTransaction with
                 | null -> ()
                 | t ->
-                    do! t |> Db.commit ct
+                    do! (t |> Db.commit ct)
 
                 return operation { return r }
             }
 
         let beginTransaction (db: DatabaseContext) ct r =
-            async {
-                do!
-                    db.Database.BeginTransactionAsync(ct)
-                    |> Async.AwaitTask
-                    |> Async.Ignore
-
+            task {
+                do! Db.beginTransaction ct db
                 return operation { return r }
             }

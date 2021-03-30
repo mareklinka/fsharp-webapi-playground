@@ -1,6 +1,7 @@
 ﻿namespace SeedProject.Domain
 
 open System
+open FSharp.Control.Tasks
 
 open AbsenceRequests.Types
 open SeedProject.Infrastructure.Common
@@ -129,7 +130,7 @@ module AbsenceRequestOperations =
             )
 
     let updateRequest (request, data) =
-        async {
+        task {
             return operation {
                 match request with
                 | NewRequest (New r) ->

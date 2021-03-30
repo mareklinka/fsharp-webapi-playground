@@ -65,7 +65,7 @@ module GetRequest =
                     DatabaseId.createAsync
                     &=> AbsenceRequestPersistence.getSingleRequest db ct
                     &=> (Private.toModel |> Context.asOperation)
-                    &== (fun _ -> async { SemanticLog.absenceRequestRetrieved logger id })
+                    &== (fun _ -> task { SemanticLog.absenceRequestRetrieved logger id })
                     &=? Context.jsonOutput
                     <| id
 

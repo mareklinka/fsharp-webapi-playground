@@ -1,11 +1,9 @@
 namespace SeedProject.Host.Handlers.AbsenceRequests
 
 open System
-open FSharp.Control.Tasks
 open Microsoft.AspNetCore.Http
 
 open Giraffe
-open Giraffe.Core
 
 open SeedProject.Infrastructure.Common
 open SeedProject.Infrastructure.Operators
@@ -16,6 +14,8 @@ open SeedProject.Host
 open SeedProject.Domain
 open SeedProject.Infrastructure
 open SeedProject.Infrastructure.Logging
+
+open FSharp.Control.Tasks
 
 module UpdateRequest =
 
@@ -32,7 +32,7 @@ module UpdateRequest =
     module Private =
         let validate =
             fun input ->
-                async {
+                task {
                     return
                         match input.StartDate with
                         | Some startDate ->
@@ -58,7 +58,7 @@ module UpdateRequest =
                 let ct = Context.cancellationToken context
                 let logger = "UpdateRequest" |> Context.loggerFactory context
 
-                let loadRequest =  DatabaseId.createAsync &=> AbsenceRequestPersistence.getSingleRequest db ct
+                let loadRequest = DatabaseId.createAsync &=> AbsenceRequestPersistence.getSingleRequest db ct
 
                 let! pipeline =
                     loadRequest >&< Private.validate
@@ -67,7 +67,7 @@ module UpdateRequest =
                     &=> AbsenceRequestPersistence.updateRequestEntity db
                     &=> Context.Database.save db ct
                     &=> Context.Database.commit db ct
-                    &== (fun _ -> async { SemanticLog.absenceRequestUpdated logger id })
+                    &== (fun _ -> task { SemanticLog.absenceRequestUpdated logger id })
                     &=? ((fun _ -> Successful.NO_CONTENT) |> Context.apiOutput)
                     <| (id, model)
 

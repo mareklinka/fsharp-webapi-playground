@@ -55,6 +55,8 @@ module HolidayDatePair =
 
 [<RequireQualifiedAccess>]
 module DatabaseId =
+    open FSharp.Control.Tasks
+
     open SeedProject.Infrastructure.Common
     open SeedProject.Infrastructure
 
@@ -68,4 +70,7 @@ module DatabaseId =
             | _ -> return! OperationResult.validationError (OutOfRange, ValidationMessage "Invalid database id specified")
         }
 
-    let createAsync (id: int) = async { return create id }
+    let createAsync (id: int) =
+        task {
+            return create id
+        }

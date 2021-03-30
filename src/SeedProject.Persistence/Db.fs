@@ -1,36 +1,24 @@
 namespace SeedProject.Persistence
 
+open FSharp.Control.Tasks
+
 open Microsoft.EntityFrameworkCore
 open Microsoft.EntityFrameworkCore.Storage
+open System.Threading.Tasks
 
 [<RequireQualifiedAccess>]
 module public Db =
     let beginTransaction ct (context: DbContext) =
-        async {
-            return!
-                ct
-                |> context.Database.BeginTransactionAsync
-                |> Async.AwaitTask
-        }
+        context.Database.BeginTransactionAsync(ct) :> Task
 
     let saveChanges ct (context: DbContext) =
-        async {
-            do!
-                ct
-                |> context.SaveChangesAsync
-                |> Async.AwaitTask
-                |> Async.Ignore
-        }
+        context.SaveChangesAsync(ct) :> Task
 
     let migrateDatabase ct (context: DbContext) =
-        async {
-            do!
-                context.Database.MigrateAsync(ct)
-                |> Async.AwaitTask
-        }
+        context.Database.MigrateAsync(ct)
 
     let commit ct (transaction: IDbContextTransaction) =
-        async { do! transaction.CommitAsync(ct) |> Async.AwaitTask }
+        transaction.CommitAsync(ct)
 
     let set<'a when 'a: not struct> (context: DbContext) = context.Set<'a>()
 

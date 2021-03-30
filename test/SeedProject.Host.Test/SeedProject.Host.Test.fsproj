@@ -30,6 +30,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\SeedProject.Host\SeedProject.Host.fsproj" />
     <ProjectReference Include="..\..\src\SeedProject.Domain\SeedProject.Domain.fsproj" />
+    <ProjectReference Include="..\SeedProject.Tests.Infrastructure\SeedProject.Tests.Infrastructure.fsproj" />
   </ItemGroup>
 
 </Project>
