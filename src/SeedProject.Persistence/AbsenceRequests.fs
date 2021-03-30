@@ -64,7 +64,7 @@ module AbsenceRequestPersistence =
                 }
         }
 
-    let updateRequestEntity (db: DatabaseContext) request =
+    let updateEntity (db: DatabaseContext) request =
         task {
             let requestContent = request |> unwrapRequest
 

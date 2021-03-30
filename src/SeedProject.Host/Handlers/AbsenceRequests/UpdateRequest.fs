@@ -10,12 +10,14 @@ open SeedProject.Infrastructure.Operators
 open SeedProject.Domain.Constructors
 open SeedProject.Domain.AbsenceRequests.Types
 open SeedProject.Persistence
+open SeedProject.Persistence.Model
 open SeedProject.Host
 open SeedProject.Domain
 open SeedProject.Infrastructure
 open SeedProject.Infrastructure.Logging
 
 open FSharp.Control.Tasks
+open System.Threading.Tasks
 
 module UpdateRequest =
 
@@ -54,7 +56,7 @@ module UpdateRequest =
     let handler id model : HttpHandler =
         fun (next: HttpFunc) (context: HttpContext) ->
             task {
-                let db = Context.Database.resolve context
+                let db = Context.resolve<DatabaseContext> context
                 let ct = Context.cancellationToken context
                 let logger = "UpdateRequest" |> Context.loggerFactory context
 
@@ -62,13 +64,13 @@ module UpdateRequest =
 
                 let! pipeline =
                     loadRequest >&< Private.validate
-                    &=> Context.Database.beginTransaction db ct
+                    &== (fun _ -> Db.beginTransaction ct db)
                     &=> AbsenceRequestOperations.updateRequest
-                    &=> AbsenceRequestPersistence.updateRequestEntity db
-                    &=> Context.Database.save db ct
-                    &=> Context.Database.commit db ct
-                    &== (fun _ -> task { SemanticLog.absenceRequestUpdated logger id })
-                    &=? ((fun _ -> Successful.NO_CONTENT) |> Context.apiOutput)
+                    &=> AbsenceRequestPersistence.updateEntity db
+                    &== (fun _ -> Db.saveChanges ct db)
+                    &== (fun _ -> Db.commit ct db)
+                    &== (fun _ -> unitTask { SemanticLog.absenceRequestUpdated logger id })
+                    &=! ((fun _ -> Successful.NO_CONTENT) |> Context.apiOutput)
                     <| (id, model)
 
                 return! pipeline next context

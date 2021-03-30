@@ -41,7 +41,7 @@ module Operators =
                         OperationResult.operationError (AggregateError, OperationMessage "Multiple errors occured")
             }
 
-    let private tap (f : OperationStep<'a, 'b>) (g: 'b -> Task<unit>) =
+    let private tap (f : OperationStep<'a, 'b>) (g: 'b -> Task) =
         fun a ->
             task {
                 let! fResult = f a
@@ -54,7 +54,7 @@ module Operators =
                 return fResult
             }
 
-    let private terminate (f : OperationStep<'a, 'b>) (g: 'b -> 'c) (h: SerializationModel -> 'c) =
+    let private terminate (f : OperationStep<'a, 'b>) (g: 'b -> 'c) (h: SerializationModel -> 'c) (i: SerializationModel -> 'c) =
         fun a ->
             task {
                 let! fResult = f a
@@ -63,11 +63,11 @@ module Operators =
                     | OperationResult.Success value ->
                         return g value
                     | OperationResult.ValidationError ve -> return (ve |> Rendering.Validation |> h)
-                    | OperationResult.OperationError oe -> return (oe |> Rendering.Operation |> h)
+                    | OperationResult.OperationError oe -> return (oe |> Rendering.Operation |> i)
             }
 
     let ( >>= ) a f = bind f a
     let ( &=> ) f g = compose f g
     let ( &== ) f g = tap f g
-    let ( &=? ) f (g, h) = terminate f g h
+    let ( &=! ) f (g, h, i) = terminate f g h i
     let ( >&< ) f g = combine f g

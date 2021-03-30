@@ -6,15 +6,10 @@ open Microsoft.AspNetCore.Http
 open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Logging
 
-open SeedProject.Persistence.Model
-open SeedProject.Persistence
 open SeedProject.Infrastructure
 
 [<RequireQualifiedAccessAttribute>]
 module Context =
-    let private operation =
-        OperationResult.OperationResultBuilder.Instance
-
     let resolve<'a> (context: HttpContext) =
         context.RequestServices.GetRequiredService<'a>()
 
@@ -41,30 +36,9 @@ module Context =
                 value |> f |> OperationResult.fromResult
         }
 
-    let apiOutput apiOutput = (apiOutput, Giraffe.Core.json)
-    let jsonOutput = (Giraffe.Core.json, Giraffe.Core.json)
+    open Giraffe
+    let private validationErrorOutput = RequestErrors.NOT_ACCEPTABLE
+    let private operationErrorOutput = RequestErrors.BAD_REQUEST
 
-    module Database =
-        let resolve = resolve<DatabaseContext>
-
-        let save db ct r =
-            task {
-                do! Db.saveChanges ct db
-                return operation { return r }
-            }
-
-        let commit (db: DatabaseContext) ct r =
-            task {
-                match db.Database.CurrentTransaction with
-                | null -> ()
-                | t ->
-                    do! (t |> Db.commit ct)
-
-                return operation { return r }
-            }
-
-        let beginTransaction (db: DatabaseContext) ct r =
-            task {
-                do! Db.beginTransaction ct db
-                return operation { return r }
-            }
+    let apiOutput apiOutput = (apiOutput, validationErrorOutput, operationErrorOutput)
+    let jsonOutput = (json, validationErrorOutput, operationErrorOutput)

@@ -13,6 +13,7 @@ open SeedProject.Domain.AbsenceRequests.Types
 open SeedProject.Persistence
 open SeedProject.Host
 open SeedProject.Infrastructure.Logging
+open SeedProject.Persistence.Model
 
 module GetRequest =
     [<RequireQualifiedAccess>]
@@ -56,7 +57,7 @@ module GetRequest =
 
     let handler id : HttpHandler =
         fun (next: HttpFunc) (context: HttpContext) ->
-            let db = Context.Database.resolve context
+            let db = context |> Context.resolve<DatabaseContext>
             let ct = Context.cancellationToken context
             let logger = "GetRequest" |> Context.loggerFactory context
 
@@ -65,8 +66,8 @@ module GetRequest =
                     DatabaseId.createAsync
                     &=> AbsenceRequestPersistence.getSingleRequest db ct
                     &=> (Private.toModel |> Context.asOperation)
-                    &== (fun _ -> task { SemanticLog.absenceRequestRetrieved logger id })
-                    &=? Context.jsonOutput
+                    &== (fun _ -> unitTask { SemanticLog.absenceRequestRetrieved logger id })
+                    &=! Context.jsonOutput
                     <| id
 
                 return! pipeline next context
