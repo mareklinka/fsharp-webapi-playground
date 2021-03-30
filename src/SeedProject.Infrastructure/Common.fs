@@ -24,6 +24,13 @@ module Common =
     type OperationErrorMessage = OperationMessage of string
     type OperationError = OperationErrorCode * OperationErrorMessage
 
+    type SerializationModel =
+        {
+            Code: string;
+            Message: string;
+            AdditionalInfo: string option
+        }
+
     module Rendering =
         let private renderValidationCode code =
             match code with
@@ -45,9 +52,9 @@ module Common =
             | InvariantBroken invariant -> (nameof(InvariantBroken), invariant |> renderInvariant |> Some)
 
         let Validation (code, ValidationMessage message) =
-            {| Code = code |> renderValidationCode; Message = message |}
+            { Code = code |> renderValidationCode; Message = message; AdditionalInfo = None }
 
         let Operation (code, OperationMessage message) =
             let (code, additionalInfo) = renderOperationCode code
-            {| Code = code; Message = message; AdditionalInfo = additionalInfo |}
+            { Code = code; Message = message; AdditionalInfo = additionalInfo }
 
