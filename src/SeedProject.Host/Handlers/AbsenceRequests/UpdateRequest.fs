@@ -17,7 +17,7 @@ open SeedProject.Domain
 open SeedProject.Infrastructure
 open SeedProject.Infrastructure.Logging
 
-module rec UpdateRequest =
+module UpdateRequest =
 
     [<CLIMutable>]
     type UpdateDataInputModel =

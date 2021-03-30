@@ -1,7 +1,5 @@
 namespace SeedProject.Host
 
-open System
-open System.Threading.Tasks
 open System.Text.Json
 open System.Text.Json.Serialization
 
@@ -16,8 +14,7 @@ open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Hosting
 
 open SeedProject.Persistence.Model
-open SeedProject.Infrastructure.Common
-open SeedProject.Infrastructure
+open Giraffe.EndpointRouting
 
 type Startup(configuration: IConfiguration) =
     member _.Configuration = configuration
@@ -50,5 +47,5 @@ type Startup(configuration: IConfiguration) =
             .UseRouting()
             .UseAuthorization()
             .UseGiraffeErrorHandler(Middleware.errorHandler)
-            .UseGiraffe Routing.webApp
+            .UseGiraffe(Routing.routes)
         |> ignore
