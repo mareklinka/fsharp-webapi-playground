@@ -9,6 +9,26 @@ open SeedProject.Infrastructure
 open SeedProject.Domain.Constructors
 
 module AbsenceRequestOperations =
+    type RequestType =
+        | Holiday
+        | DoctorVisit
+        | DoctorVisitWithFamily
+        | Sickday
+        | PersonalDay
+        | Sickness
+        | PandemicSickness
+
+    type CreateData =
+        {
+          Type: RequestType
+          StartDate: DateTime
+          EndDate: DateTime option
+          HalfDayStart: bool option
+          HalfDayEnd: bool option
+          Description: string
+          Duration: decimal option
+          PersonalDayType: PersonalDayType option }
+
     type UpdateData =
         {
           StartDate: DateTime
@@ -57,9 +77,6 @@ module AbsenceRequestOperations =
             let updated = { r with Start = newStart; End = newEnd; Description = newDescription; }
             updated, updated <> r
 
-    let private operation =
-        OperationResult.OperationResultBuilder.Instance
-
     module internal Helpers =
         let getHolidayUpdatePayload (data: UpdateData) =
             operation {
@@ -69,7 +86,7 @@ module AbsenceRequestOperations =
                     return (datePair, Description data.Description)
                 | _ ->
                     return!
-                        OperationResult.validationError (
+                        ValidationError (
                             IncompleteData,
                             ValidationMessage "Incomplete data provided"
                         )
@@ -83,7 +100,7 @@ module AbsenceRequestOperations =
                     return (data.StartDate, Description data.Description, duration)
                 | _ ->
                     return!
-                        OperationResult.validationError (
+                        ValidationError (
                             IncompleteData,
                             ValidationMessage "Incomplete data provided"
                         )
@@ -103,7 +120,55 @@ module AbsenceRequestOperations =
                 | Some t -> return (data.StartDate, Description data.Description, t)
                 | _ ->
                     return!
-                        OperationResult.validationError (
+                        ValidationError (
+                            IncompleteData,
+                            ValidationMessage "Incomplete data provided"
+                        )
+            }
+
+        let getHolidayCreatePayload (data: CreateData) =
+            operation {
+                match (data.HalfDayStart, data.EndDate, data.HalfDayEnd) with
+                | (Some halfDayStart, Some endDate, Some halfDayEnd) ->
+                    let! datePair = HolidayDatePair.create data.StartDate halfDayStart endDate halfDayEnd
+                    return (datePair, Description data.Description)
+                | _ ->
+                    return!
+                        ValidationError (
+                            IncompleteData,
+                            ValidationMessage "Incomplete data provided"
+                        )
+            }
+
+        let getDurationCreatePayload (data: CreateData) =
+            operation {
+                match data.Duration with
+                | Some duration ->
+                    let! duration = RequestDuration.create duration
+                    return (data.StartDate, Description data.Description, duration)
+                | _ ->
+                    return!
+                        ValidationError (
+                            IncompleteData,
+                            ValidationMessage "Incomplete data provided"
+                        )
+            }
+
+        let getSicknessCreatePayload (data: CreateData) =
+            operation {
+                return
+                    ({ SicknessDatePair.Start = data.StartDate
+                       End = data.EndDate },
+                     Description data.Description)
+            }
+
+        let getPersonalDayCreatePayload (data: CreateData) =
+            operation {
+                match data.PersonalDayType with
+                | Some t -> return (data.StartDate, Description data.Description, t)
+                | _ ->
+                    return!
+                        ValidationError (
                             IncompleteData,
                             ValidationMessage "Incomplete data provided"
                         )
@@ -121,8 +186,8 @@ module AbsenceRequestOperations =
 
     let rejectRequest request =
         match request with
-        | NewRequest r -> r |> rejectNewRequest |> OperationResult.Success
-        | RejectedRequest r -> r |> OperationResult.Success
+        | NewRequest r -> r |> rejectNewRequest |> Success
+        | RejectedRequest r -> r |> Success
         | ApprovedRequest _ ->
             OperationResult.OperationError(
                 RejectionOfApprovedRequest,
@@ -186,17 +251,68 @@ module AbsenceRequestOperations =
                             )
                 | ApprovedRequest _ ->
                     return!
-                        OperationResult.OperationError(
+                        OperationError(
                             RejectionOfApprovedRequest,
                             OperationMessage "The request cannot be rejected as it has already been approved"
                         )
                 | RejectedRequest _ ->
                     return!
-                        OperationResult.OperationError(
+                        OperationError(
                             UpdateForbidden,
                             OperationMessage "Rejected requests cannot be updated"
                         )
             }
         }
 
+    let createRequest (data: CreateData) =
+        task {
+            return operation {
+                match data.Type with
+                | Holiday ->
+                    let! (datePair, description) = data |> Helpers.getHolidayCreatePayload
+                    return NewRequest(New(HolidayRequest( { Id = Id 0; Start = datePair.Start; End = datePair.End; Description = description })))
+                | PersonalDay ->
+                    let! (date, description, t) = data |> Helpers.getPersonalDayCreatePayload
+                    return NewRequest(New(PersonalDayRequest({ Id = Id 0; Date = date; Description = description; Type = t })))
+                | Sickday ->
+                    let! (date, description, duration) = data |> Helpers.getDurationCreatePayload
+                    return NewRequest(New(SickdayRequest({ Id = Id 0; Date = date; Description = description; Duration = duration })))
+                | DoctorVisit ->
+                    let! (date, description, duration) = data |> Helpers.getDurationCreatePayload
+
+                    return
+                        NewRequest(
+                            New(
+                                DoctorVisitRequest(
+                                    { Id = Id 0; Date = date; Description = description; Duration = duration }
+                                )
+                            )
+                        )
+                | DoctorVisitWithFamily ->
+                    let! (date, description, duration) = data |> Helpers.getDurationCreatePayload
+
+                    return
+                        NewRequest(
+                            New(
+                                DoctorVisitWithFamilyRequest(
+                                    { Id = Id 0; Date = date; Description = description; Duration = duration }
+                                )
+                            )
+                        )
+                | Sickness ->
+                    let! (datePair, description) = data |> Helpers.getSicknessCreatePayload
+                    return NewRequest(New(SicknessRequest({ Id = Id 0; Start = datePair.Start; End = datePair.End; Description = description })))
+                | PandemicSickness ->
+                    let! (datePair, description) = data |> Helpers.getSicknessCreatePayload
+
+                    return
+                        NewRequest(
+                            New(
+                                PandemicSicknessRequest(
+                                    { Id = Id 0; Start = datePair.Start; End = datePair.End; Description = description }
+                                )
+                            )
+                        )
+            }
+        }
 

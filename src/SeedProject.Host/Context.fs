@@ -33,7 +33,7 @@ module Context =
     let asOperation f value =
         task {
             return
-                value |> f |> OperationResult.fromResult
+                value |> f |> Success
         }
 
     open Giraffe

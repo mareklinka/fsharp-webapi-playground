@@ -22,7 +22,7 @@ open System.Threading.Tasks
 module UpdateRequest =
 
     [<CLIMutable>]
-    type UpdateDataInputModel =
+    type UpdateRequestInputModel =
         { StartDate: DateTime option
           EndDate: DateTime option
           HalfDayStart: bool option
@@ -38,7 +38,7 @@ module UpdateRequest =
                     return
                         match input.StartDate with
                         | Some startDate ->
-                            OperationResult.fromResult
+                            Success
                                 { AbsenceRequestOperations.UpdateData.Description = input.Description
                                   AbsenceRequestOperations.UpdateData.Duration = input.Duration
                                   AbsenceRequestOperations.UpdateData.StartDate = startDate
@@ -47,7 +47,7 @@ module UpdateRequest =
                                   AbsenceRequestOperations.UpdateData.HalfDayEnd = input.HalfDayEnd
                                   AbsenceRequestOperations.UpdateData.PersonalDayType = input.PersonalDayType }
                         | None ->
-                                OperationResult.validationError (
+                                ValidationError (
                                     IncompleteData,
                                     ValidationMessage "Start date is missing"
                                 )
@@ -70,7 +70,7 @@ module UpdateRequest =
                     &== (fun _ -> Db.saveChanges ct db)
                     &== (fun _ -> Db.commit ct db)
                     &== (fun _ -> unitTask { SemanticLog.absenceRequestUpdated logger id })
-                    &=! ((fun _ -> Successful.NO_CONTENT) |> Context.apiOutput)
+                    &=! ((fun _ -> setStatusCode 200) |> Context.apiOutput)
                     <| (id, model)
 
                 return! pipeline next context

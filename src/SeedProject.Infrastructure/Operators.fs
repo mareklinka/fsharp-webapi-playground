@@ -11,11 +11,11 @@ module Operators =
     let private bind (f : OperationStep<_, _>) (a : M<_>) : M<_> = task {
         let! r = a
         match r with
-        | OperationResult.Success value ->
+        | Success value ->
             let next = f value
             return! next
-        | OperationResult.ValidationError (code, message) -> return OperationResult.ValidationError (code, message)
-        | OperationResult.OperationError (code, message) -> return OperationResult.OperationError (code, message)
+        | ValidationError (code, message) -> return ValidationError (code, message)
+        | OperationError (code, message) -> return OperationError (code, message)
     }
 
     let private compose (f : OperationStep<'a, 'b>) (g : OperationStep<'b, 'c>) : 'a -> M<'c> =
@@ -29,16 +29,16 @@ module Operators =
 
                 return
                     match (fResult, gResult) with
-                    | (OperationResult.Success fVal, OperationResult.Success gVal) ->
-                        OperationResult.fromResult ((fVal, gVal))
-                    | (OperationResult.ValidationError error, OperationResult.Success _)
-                    | (OperationResult.Success _, OperationResult.ValidationError error) ->
-                        OperationResult.validationError error
-                    | (OperationResult.OperationError error, OperationResult.Success _)
-                    | (OperationResult.Success _, OperationResult.OperationError error) ->
-                        OperationResult.operationError error
+                    | (Success fVal, Success gVal) ->
+                        Success ((fVal, gVal))
+                    | (ValidationError error, Success _)
+                    | (Success _, ValidationError error) ->
+                        ValidationError error
+                    | (OperationError error, Success _)
+                    | (Success _, OperationError error) ->
+                        OperationError error
                     | _ ->
-                        OperationResult.operationError (AggregateError, OperationMessage "Multiple errors occured")
+                        OperationError (AggregateError, OperationMessage "Multiple errors occured")
             }
 
     let private tap (f : OperationStep<'a, 'b>) (g: 'b -> Task) =
@@ -60,10 +60,10 @@ module Operators =
                 let! fResult = f a
 
                 match fResult with
-                    | OperationResult.Success value ->
+                    | Success value ->
                         return g value
-                    | OperationResult.ValidationError ve -> return (ve |> Rendering.Validation |> h)
-                    | OperationResult.OperationError oe -> return (oe |> Rendering.Operation |> i)
+                    | ValidationError ve -> return (ve |> Rendering.Validation |> h)
+                    | OperationError oe -> return (oe |> Rendering.Operation |> i)
             }
 
     let ( >>= ) a f = bind f a

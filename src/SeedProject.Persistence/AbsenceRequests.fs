@@ -12,9 +12,6 @@ open SeedProject.Domain.Constructors
 
 [<RequireQualifiedAccess>]
 module AbsenceRequestPersistence =
-    let private operation =
-        OperationResult.OperationResultBuilder.Instance
-
     let private unwrapRequest request =
         match request with
         | NewRequest (New r) -> r
@@ -34,7 +31,7 @@ module AbsenceRequestPersistence =
                     match request with
                     | null ->
                         return!
-                            OperationResult.operationError (
+                            OperationError (
                                 NotFound(Id id),
                                 OperationMessage "The specified request was not found"
                             )
@@ -57,7 +54,7 @@ module AbsenceRequestPersistence =
                             )
                     | _ ->
                         return!
-                            OperationResult.operationError (
+                            OperationError (
                                 InvariantBroken HolidayRequestMustHaveEndDate,
                                 OperationMessage "Invariant broken on the retrieved entity - "
                             )
@@ -112,5 +109,53 @@ module AbsenceRequestPersistence =
             let e = entityUpdate |> Db.attach db
             e.State <- EntityState.Modified
 
-            return OperationResult.fromResult request
+            return Success request
+        }
+
+    let addEntity (db: DatabaseContext) request =
+        task {
+            let requestContent = request |> unwrapRequest
+
+            let entityUpdate =
+                match requestContent with
+                | HolidayRequest { Description = Description d
+                                   Start = s
+                                   End = e } ->
+                    let (startDate, isStartHalf) = s |> HolidayDate.extract
+                    let (endDate, isEndHalf) = e |> HolidayDate.extract
+
+                    new AbsenceRequest(
+                        Description = d,
+                        StartDate = startDate,
+                        IsHalfDayStart = isStartHalf,
+                        EndDate = endDate,
+                        IsHalfDayEnd = isEndHalf
+                    )
+                | PersonalDayRequest { Id = Id id
+                                       Description = Description d
+                                       Date = date } -> failwith "Not Implemented"
+                | SickdayRequest { Id = Id id
+                                   Description = Description d
+                                   Date = date
+                                   Duration = (hour, minute) } -> failwith "Not Implemented"
+                | DoctorVisitRequest { Id = Id id
+                                       Description = Description d
+                                       Date = date
+                                       Duration = (hour, minute) } -> failwith "Not Implemented"
+                | DoctorVisitWithFamilyRequest { Id = Id id
+                                                 Description = Description d
+                                                 Date = date
+                                                 Duration = (hour, minute) } -> failwith "Not Implemented"
+                | SicknessRequest { Id = Id id
+                                    Description = Description d
+                                    Start = s
+                                    End = e } -> failwith "Not Implemented"
+                | PandemicSicknessRequest { Id = Id id
+                                            Description = Description d
+                                            Start = s
+                                            End = e } -> failwith "Not Implemented"
+
+            entityUpdate |> db.Add |> ignore
+
+            return Success request
         }
