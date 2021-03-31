@@ -1,13 +1,11 @@
 namespace SeedProject.Host.Handlers.AbsenceRequests
 
-open System
 open Microsoft.AspNetCore.Http
 
 open Giraffe
 
 open SeedProject.Infrastructure.Common
 open SeedProject.Infrastructure.Operators
-open SeedProject.Domain.AbsenceRequests.Types
 open SeedProject.Persistence
 open SeedProject.Persistence.Model
 open SeedProject.Host
@@ -73,13 +71,14 @@ module CreateRequest =
 
                 let! pipeline =
                     Private.validate
-                    &== (fun _ -> Db.beginTransaction ct db)
+                    &=> Pipeline.beginTransaction ct db
                     &=> AbsenceRequestOperations.createRequest
                     &=> AbsenceRequestPersistence.addEntity db
-                    &== (fun _ -> Db.saveChanges ct db)
-                    &== (fun _ -> Db.commit ct db)
-                    &== (fun _ -> unitTask { SemanticLog.absenceRequestUpdated logger id })
-                    &=! (Context.apiOutput (fun ar -> ar.Id |> json))
+                    &=> Pipeline.saveChanges ct db
+                    &=> Pipeline.commit ct db
+                    &=> Pipeline.transform (fun ar -> ar.Id)
+                    &=> Pipeline.sideEffect (fun id -> SemanticLog.absenceRequestCreated logger id)
+                    &=! Pipeline.writeJson
                     <| model
 
                 return! pipeline next context

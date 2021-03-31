@@ -46,19 +46,6 @@ module Operators =
                         OperationError (AggregateError [veMessage; oeMessage], OperationMessage "Multiple errors occured")
             }
 
-    let private tap (f : OperationStep<'a, 'b>) (g: 'b -> Task) =
-        fun a ->
-            task {
-                let! fResult = f a
-
-                match fResult with
-                | Success fVal ->
-                    do! g fVal
-                | _ -> ()
-
-                return fResult
-            }
-
     let private terminate (f : OperationStep<'a, 'b>) (g: 'b -> 'c) (h: SerializationModel -> 'c) (i: SerializationModel -> 'c) =
         fun a ->
             task {
@@ -72,6 +59,5 @@ module Operators =
             }
 
     let ( &=> ) f g = compose f g
-    let ( &== ) f g = tap f g
     let ( &=! ) f (g, h, i) = terminate f g h i
     let ( >&< ) f g = combine f g

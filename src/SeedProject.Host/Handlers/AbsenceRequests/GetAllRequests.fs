@@ -21,13 +21,11 @@ module GetAllRequests =
             let logger = "GetAllRequests" |> Context.loggerFactory context
 
             task {
-                let g = (toModelList |> Context.asOperation)
-
                 let pipeline =
                     (fun () -> AbsenceRequestPersistence.getAllRequests db ct)
-                    &=> (toModelList |> Context.asOperation)
-                    &== (fun _ -> unitTask { SemanticLog.absenceRequestRetrieved logger id })
-                    &=! Context.jsonOutput
+                    &=> Pipeline.transform toModelList
+                    &=> Pipeline.sideEffect (fun items -> SemanticLog.absenceRequestsRetrieved logger (items |> List.length))
+                    &=! Pipeline.writeJson
 
                 let! pipelineResult = pipeline()
 

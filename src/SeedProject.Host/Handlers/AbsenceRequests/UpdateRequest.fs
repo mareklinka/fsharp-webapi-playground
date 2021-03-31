@@ -1,6 +1,5 @@
 namespace SeedProject.Host.Handlers.AbsenceRequests
 
-open System
 open Microsoft.AspNetCore.Http
 
 open Giraffe
@@ -53,13 +52,13 @@ module UpdateRequest =
 
                 let! pipeline =
                     loadRequest >&< Private.validate
-                    &== (fun _ -> Db.beginTransaction ct db)
+                    &=> Pipeline.beginTransaction ct db
                     &=> AbsenceRequestOperations.updateRequest
                     &=> AbsenceRequestPersistence.updateEntity db
-                    &== (fun _ -> Db.saveChanges ct db)
-                    &== (fun _ -> Db.commit ct db)
-                    &== (fun _ -> unitTask { SemanticLog.absenceRequestUpdated logger id })
-                    &=! ((fun _ -> setStatusCode 200) |> Context.apiOutput)
+                    &=> Pipeline.saveChanges ct db
+                    &=> Pipeline.commit ct db
+                    &=> Pipeline.sideEffect (fun _ -> SemanticLog.absenceRequestUpdated logger id)
+                    &=! Pipeline.response (fun _ -> setStatusCode 200)
                     <| (id, model)
 
                 return! pipeline next context
