@@ -7,6 +7,7 @@
   <ItemGroup>
     <Compile Include="Generators/Generators.fs" />
     <Compile Include="TestHost.fs" />
+    <Compile Include="Infrastructure/Combinators.fs" />
     <Compile Include="Infrastructure/TestHostFixture.fs" />
     <Compile Include="Infrastructure/TestHostCollection.fs" />
     <Compile Include="Tests.fs" />

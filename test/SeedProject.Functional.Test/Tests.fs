@@ -1,6 +1,5 @@
 namespace SeedProject.Functional
 
-open System.Threading.Tasks
 open FSharp.Control.Tasks
 
 open Xunit
@@ -10,9 +9,7 @@ open SeedProject.Functional.Serialization
 open SeedProject.Functional.Infrastructure
 open SeedProject.Functional.HttpResponse
 open SeedProject.Host.Handlers.AbsenceRequests.Types
-open FsUnit
 
-open FsCheck
 open FsCheck.Xunit
 open Generators
 
@@ -27,20 +24,14 @@ type BasicTests(fixture: TestHostFixture, output: ITestOutputHelper) =
         (task {
             do! TestServer.clearDb host
 
-            do! model
-                |> (Api.createAbsenceRequest client)
+            let! created =
+                model
+                |> Api.createAbsenceRequest client
                 |> assertOk
-                :> Task
-
-            let! allRequests =
-                client
-                |> Api.getAllAbsenceRequests
+                |> deserialize<int>
+                |- Api.getAbsenceRequest client
                 |> assertOk
-                |> deserialize<AbsenceRequestModel list>
-
-            allRequests.Length |> should equal 1
-
-            let created = allRequests.Head
+                |> deserialize<AbsenceRequestModel>
 
             return
                 created.Description = model.Description
