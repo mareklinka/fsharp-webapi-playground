@@ -21,9 +21,8 @@ type BasicTests(fixture: TestHostFixture, output: ITestOutputHelper) =
     let client = fixture.Client
     let host = fixture.Host
     let logger = output.WriteLine
-    do Arb.register<GeneratorRegistry>() |> ignore
 
-    [<Property>]
+    [<Property(Arbitrary = [| typeof<ValidAbsenceRequestCreationModel>|])>]
     member __.CreationTest model =
         (task {
             do! TestServer.clearDb host
@@ -44,7 +43,7 @@ type BasicTests(fixture: TestHostFixture, output: ITestOutputHelper) =
             let created = allRequests.Head
 
             return
-                Some created.Description = model.Description
+                created.Description = model.Description
                 && created.StartDate = model.StartDate.Value
                 && created.EndDate = model.EndDate
                 && created.HalfDayStart = model.HalfDayStart

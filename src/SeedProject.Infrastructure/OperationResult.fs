@@ -9,27 +9,35 @@ module OperationResult =
 
     [<RequireQualifiedAccess>]
     module OperationResult =
+        let map f a =
+            match a with
+            | Success x -> Success (f x)
+            | ValidationError e -> ValidationError e
+            | OperationError e -> OperationError e
 
-        let apply (fM : OperationResult<'a -> 'b>) (m : OperationResult<'a>) : OperationResult<'b> =
-            let fmResult = fM
-            let mResult = m
+        let rtrn = Success
 
-            match (fmResult, mResult) with
+        let apply (f : OperationResult<'a -> 'b>) (m : OperationResult<'a>) : OperationResult<'b> =
+            match (f, m) with
             | (Success f, Success mResult) -> Success (f mResult)
-            | (_, ValidationError (code, message)) -> ValidationError (code, message)
-            | (_, OperationError (code, message)) -> OperationError (code, message)
-            | (ValidationError (code, message), _) -> ValidationError (code, message)
-            | (OperationError (code, message), _) -> OperationError (code, message)
+            | (_, ValidationError e) -> ValidationError e
+            | (_, OperationError e) -> OperationError e
+            | (ValidationError e, _) -> ValidationError e
+            | (OperationError e, _) -> OperationError e
 
-        let rec map (f: 'a -> OperationResult<'b>) (list: 'a list) : OperationResult<'b list> =
-            let (<*>) = apply
-            let cons head tail = head :: tail
+        let private (<*>) = apply
+        let private cons head tail = head :: tail
 
+        let rec mapList (f: 'a -> OperationResult<'b>) (list: 'a list) : OperationResult<'b list> =
             match list with
             | [] ->
                 Success []
             | head::tail ->
-                Success cons <*> (f head) <*> (map f tail)
+                Success cons <*> (f head) <*> (mapList f tail)
+
+        module Operators =
+            let (<!>) = map
+            let (<*>) = apply
 
     [<RequireQualifiedAccess>]
     module Builder =

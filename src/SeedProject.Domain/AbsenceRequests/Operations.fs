@@ -25,7 +25,7 @@ module AbsenceRequestOperations =
           EndDate: DateTime option
           HalfDayStart: bool option
           HalfDayEnd: bool option
-          Description: string
+          Description: string option
           Duration: decimal option
           PersonalDayType: PersonalDayType option }
 
@@ -35,7 +35,7 @@ module AbsenceRequestOperations =
           EndDate: DateTime option
           HalfDayStart: bool option
           HalfDayEnd: bool option
-          Description: string
+          Description: string option
           Duration: decimal option
           PersonalDayType: PersonalDayType option }
 

@@ -37,8 +37,13 @@ module Operators =
                     | (OperationError error, Success _)
                     | (Success _, OperationError error) ->
                         OperationError error
-                    | _ ->
-                        OperationError (AggregateError, OperationMessage "Multiple errors occured")
+                    | (OperationError (_, OperationMessage message1), OperationError (_, OperationMessage message2)) ->
+                        OperationError (AggregateError [message1; message2], OperationMessage "Multiple errors occured")
+                    | (ValidationError (_, ValidationMessage message1), ValidationError (_, ValidationMessage message2)) ->
+                        OperationError (AggregateError [message1; message2], OperationMessage "Multiple errors occured")
+                    | (OperationError (_, OperationMessage oeMessage), ValidationError (_, ValidationMessage veMessage))
+                    | (ValidationError (_, ValidationMessage veMessage), OperationError (_, OperationMessage oeMessage)) ->
+                        OperationError (AggregateError [veMessage; oeMessage], OperationMessage "Multiple errors occured")
             }
 
     let private tap (f : OperationStep<'a, 'b>) (g: 'b -> Task) =
@@ -47,7 +52,7 @@ module Operators =
                 let! fResult = f a
 
                 match fResult with
-                | OperationResult.Success fVal ->
+                | Success fVal ->
                     do! g fVal
                 | _ -> ()
 
@@ -66,7 +71,6 @@ module Operators =
                     | OperationError oe -> return (oe |> Rendering.Operation |> i)
             }
 
-    let ( >>= ) a f = bind f a
     let ( &=> ) f g = compose f g
     let ( &== ) f g = tap f g
     let ( &=! ) f (g, h, i) = terminate f g h i

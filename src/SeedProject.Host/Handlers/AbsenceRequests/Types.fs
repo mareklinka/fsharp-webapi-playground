@@ -19,7 +19,7 @@ module Types =
           EndDate: DateTime option
           HalfDayStart: bool option
           HalfDayEnd: bool option
-          Description: string
+          Description: string option
           Type: RequestType }
 
     [<CLIMutable>]
@@ -39,6 +39,42 @@ module Types =
           EndDate: DateTime option
           HalfDayStart: bool option
           HalfDayEnd: bool option
-          Description: string
+          Description: string option
           Duration: decimal option
           PersonalDayType: PersonalDayType option }
+
+module CommonMethods =
+    open SeedProject.Infrastructure.Common
+    open SeedProject.Domain.Constructors
+    open Types
+
+    let private unwrapRequest request =
+      match request with
+      | NewRequest (New r) -> r
+      | ApprovedRequest (Approved r) -> r
+      | RejectedRequest (Rejected r) -> r
+
+    let toModel value =
+        match unwrapRequest value with
+        | HolidayRequest { Id = Id id
+                           Start = s
+                           End = e
+                           Description = Description d } ->
+            let (startDate, isStartHalf) = s |> HolidayDate.extract
+            let (endDate, isEndHalf) = e |> HolidayDate.extract
+
+            { AbsenceRequestModel.Id = id
+              StartDate = startDate
+              EndDate = Some(endDate)
+              HalfDayStart = Some(isStartHalf)
+              HalfDayEnd = Some(isEndHalf)
+              Description = d
+              Type = RequestType.Holiday }
+        | _ ->
+            { AbsenceRequestModel.Id = 0
+              StartDate = DateTime.Today
+              EndDate = None
+              HalfDayStart = None
+              HalfDayEnd = None
+              Description = None
+              Type = RequestType.PersonalDay }

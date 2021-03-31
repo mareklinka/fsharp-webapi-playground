@@ -6,51 +6,14 @@ open Microsoft.AspNetCore.Http
 
 open Giraffe.Core
 
-open SeedProject.Infrastructure.Common
 open SeedProject.Infrastructure.Operators
 open SeedProject.Domain.Constructors
-open SeedProject.Domain.AbsenceRequests.Types
 open SeedProject.Persistence
 open SeedProject.Host
 open SeedProject.Infrastructure.Logging
 open SeedProject.Persistence.Model
 
 module GetRequest =
-    [<RequireQualifiedAccess>]
-    module Private =
-        open Types
-
-        let unwrapRequest request =
-            match request with
-            | NewRequest (New r) -> r
-            | ApprovedRequest (Approved r) -> r
-            | RejectedRequest (Rejected r) -> r
-
-        let toModel value =
-            match unwrapRequest value with
-            | HolidayRequest { Id = Id id
-                               Start = s
-                               End = e
-                               Description = Description d } ->
-                let (startDate, isStartHalf) = s |> HolidayDate.extract
-                let (endDate, isEndHalf) = e |> HolidayDate.extract
-
-                { AbsenceRequestModel.Id = id
-                  StartDate = startDate
-                  EndDate = Some(endDate)
-                  HalfDayStart = Some(isStartHalf)
-                  HalfDayEnd = Some(isEndHalf)
-                  Description = d
-                  Type = Types.RequestType.Holiday }
-            | _ ->
-                { AbsenceRequestModel.Id = 0
-                  StartDate = DateTime.Today
-                  EndDate = None
-                  HalfDayStart = None
-                  HalfDayEnd = None
-                  Description = ""
-                  Type = Types.RequestType.PersonalDay }
-
     let handler id : HttpHandler =
         fun (next: HttpFunc) (context: HttpContext) ->
             let db = context |> Context.resolve<DatabaseContext>
@@ -61,7 +24,7 @@ module GetRequest =
                 let! pipeline =
                     DatabaseId.createAsync
                     &=> AbsenceRequestPersistence.getSingleRequest db ct
-                    &=> (Private.toModel |> Context.asOperation)
+                    &=> (CommonMethods.toModel |> Context.asOperation)
                     &== (fun _ -> unitTask { SemanticLog.absenceRequestRetrieved logger id })
                     &=! Context.jsonOutput
                     <| id

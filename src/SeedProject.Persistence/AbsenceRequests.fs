@@ -49,7 +49,7 @@ module AbsenceRequestPersistence =
                                         { Id = Id r.Id
                                           Start = startDate
                                           End = endDate
-                                          Description = Description r.Description }
+                                          Description = Description.create r.Description }
                                 )
                             )
                     | _ ->
@@ -74,7 +74,7 @@ module AbsenceRequestPersistence =
                     let mapped =
                         requests
                         |> List.ofSeq
-                        |> OperationResult.map (fun r ->
+                        |> OperationResult.mapList (fun r ->
                             match r with
                             | r when r.EndDate.HasValue ->
                                 let startDate =
@@ -90,7 +90,7 @@ module AbsenceRequestPersistence =
                                                 { Id = Id r.Id
                                                   Start = startDate
                                                   End = endDate
-                                                  Description = Description r.Description }
+                                                  Description = Description.create r.Description }
                                         ))
                                 )
                             | _ ->
@@ -119,7 +119,7 @@ module AbsenceRequestPersistence =
 
                     new AbsenceRequest(
                         Id = id,
-                        Description = d,
+                        Description = (d |> Option.defaultValue null),
                         StartDate = startDate,
                         IsHalfDayStart = isStartHalf,
                         EndDate = endDate,
@@ -159,7 +159,7 @@ module AbsenceRequestPersistence =
         task {
             let requestContent = request |> unwrapRequest
 
-            let entityUpdate =
+            let newEntity =
                 match requestContent with
                 | HolidayRequest { Description = Description d
                                    Start = s
@@ -168,7 +168,7 @@ module AbsenceRequestPersistence =
                     let (endDate, isEndHalf) = e |> HolidayDate.extract
 
                     new AbsenceRequest(
-                        Description = d,
+                        Description = (d |> Option.defaultValue null),
                         StartDate = startDate,
                         IsHalfDayStart = isStartHalf,
                         EndDate = endDate,
@@ -198,7 +198,7 @@ module AbsenceRequestPersistence =
                                             Start = s
                                             End = e } -> failwith "Not Implemented"
 
-            entityUpdate |> db.Add |> ignore
+            newEntity |> db.Add |> ignore
 
-            return Success request
+            return Success newEntity
         }

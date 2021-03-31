@@ -11,7 +11,7 @@ module Types =
     type RequestDurationHour = Hour of int
     type RequestDurationMinute = Full | Half
 
-    type DescriptionText = Description of string
+    type DescriptionText = Description of string option
     type RequestDuration = RequestDurationHour * RequestDurationMinute
 
     type HolidayRequest =

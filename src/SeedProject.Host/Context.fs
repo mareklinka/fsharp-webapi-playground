@@ -30,15 +30,17 @@ module Context =
                 | Logging.Types.LogLevel.Critical -> logger.LogCritical(message)
 
 
-    let asOperation f value =
-        task {
-            return
-                value |> f |> Success
-        }
+    let asOperation f =
+        fun x ->
+            task {
+                return
+                    x |> f |> Success
+            }
 
     open Giraffe
     let private validationErrorOutput = RequestErrors.NOT_ACCEPTABLE
     let private operationErrorOutput = RequestErrors.BAD_REQUEST
 
-    let apiOutput apiOutput = (apiOutput, validationErrorOutput, operationErrorOutput)
+    let apiOutput apiOutput =
+        (apiOutput, validationErrorOutput, operationErrorOutput)
     let jsonOutput = (json, validationErrorOutput, operationErrorOutput)

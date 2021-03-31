@@ -44,16 +44,12 @@ module CreateRequest =
                     return
                         operation {
                             let! t = input.Type |> validateRequestType
-                            let description =
-                                match input.Description with
-                                | Some d -> d
-                                | None -> ""
 
                             return!
                                 match input.StartDate with
                                 | Some startDate ->
                                     Success
-                                        { AbsenceRequestOperations.CreateData.Description = description
+                                        { AbsenceRequestOperations.CreateData.Description = input.Description
                                           AbsenceRequestOperations.CreateData.Duration = input.Duration
                                           AbsenceRequestOperations.CreateData.StartDate = startDate
                                           AbsenceRequestOperations.CreateData.EndDate = input.EndDate
@@ -83,8 +79,8 @@ module CreateRequest =
                     &== (fun _ -> Db.saveChanges ct db)
                     &== (fun _ -> Db.commit ct db)
                     &== (fun _ -> unitTask { SemanticLog.absenceRequestUpdated logger id })
-                    &=! ((fun _ -> setStatusCode 200) |> Context.apiOutput)
-                    <| (model)
+                    &=! (Context.apiOutput (fun ar -> ar.Id |> json))
+                    <| model
 
                 return! pipeline next context
             }

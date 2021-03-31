@@ -40,40 +40,40 @@ module Formatter =
                 s |> formatHolidayDate,
                 e |> formatHolidayDate,
                 "",
-                d) |> concatCells
+                d |> Option.defaultValue "") |> concatCells
         | PersonalDayRequest { Date = date; Type = t; Description = Description d } ->
             (   t |> formatPersonalDayType |> sprintf "Personal day (%s)",
                 date |> formatDate,
                 date |> formatDate,
                 "",
-                d) |> concatCells
+                d |> Option.defaultValue "") |> concatCells
         | DoctorVisitRequest { Date = date; Duration = duration; Description = Description d } ->
             (   "Doctor visit",
                 date |> formatDate,
                 date |> formatDate,
                 duration |> formatDuration,
-                d) |> concatCells
+                d |> Option.defaultValue "") |> concatCells
         | DoctorVisitWithFamilyRequest { Date = date; Duration = duration; Description = Description d } ->
             (   "Doctor visit with family",
                 date |> formatDate,
                 date |> formatDate,
                 duration |> formatDuration,
-                d) |> concatCells
+                d |> Option.defaultValue "") |> concatCells
         | SickdayRequest { Date = date; Duration = duration; Description = Description d } ->
             (   "Sickday",
                 date |> formatDate,
                 date |> formatDate,
                 duration |> formatDuration,
-                d) |> concatCells
+                d |> Option.defaultValue "") |> concatCells
         | SicknessRequest { Start = s; End = e; Description = Description d } ->
             (   "Sickness",
                 s |> formatDate,
                 e |> formatOptionalDate,
                 "",
-                d) |> concatCells
+                d |> Option.defaultValue "") |> concatCells
         | PandemicSicknessRequest { Start = s; End = e; Description = Description d } ->
             (   "Pandemic Sickness",
                 s |> formatDate,
                 e |> formatOptionalDate,
                 "",
-                d) |> concatCells
+                d |> Option.defaultValue "") |> concatCells

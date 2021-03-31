@@ -65,3 +65,12 @@ module DatabaseId =
         task {
             return create id
         }
+
+[<RequireQualifiedAccess>]
+module Description =
+    let private T = SeedProject.Domain.AbsenceRequests.Types.Description
+
+    let create (value: string) =
+        match value with
+        | null -> T (None)
+        | _ -> T (Some value)
