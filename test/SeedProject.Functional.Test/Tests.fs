@@ -1,6 +1,5 @@
 namespace SeedProject.Functional
 
-open System
 open System.Threading.Tasks
 open FSharp.Control.Tasks
 
@@ -8,69 +7,47 @@ open Xunit
 open Xunit.Abstractions
 
 open SeedProject.Functional.Serialization
+open SeedProject.Functional.Infrastructure
 open SeedProject.Functional.HttpResponse
-open SeedProject.Host.Handlers.AbsenceRequests
-open SeedProject.Host.Handlers.AbsenceRequests.CreateRequest.Types
+open SeedProject.Host.Handlers.AbsenceRequests.Types
 open FsUnit
 
-type TestHostFixture() as this =
-    member val Host = null with get, set
-    member val Client = null with get, set
-
-    interface Xunit.IAsyncLifetime with
-        member __.InitializeAsync() =
-            unitTask {
-                let! (testHost, client) = TestServer.start ()
-                do! testHost |> TestServer.migrateDb
-                this.Host <- testHost
-                this.Client <- client
-            }
-
-        member __.DisposeAsync() =
-            unitTask {
-                do! this.Host |> TestServer.stop
-                do this.Host.Dispose()
-            }
-
-[<CollectionDefinition("Test Host Collection")>]
-type TestHostCollection(fixture: TestHostFixture) =
-    let f = fixture
-
-    interface ICollectionFixture<TestHostFixture>
-
-
+open FsCheck
+open FsCheck.Xunit
+open Generators
 
 [<Collection("Test Host Collection")>]
 type BasicTests(fixture: TestHostFixture, output: ITestOutputHelper) =
     let client = fixture.Client
+    let host = fixture.Host
     let logger = output.WriteLine
+    do Arb.register<GeneratorRegistry>() |> ignore
 
-    [<Fact>]
-    member __.CreationTest() =
-        task {
-            let model =
-                { AddRequestInputModel.Type = RequestType.Holiday
-                  Description = "AAA"
-                  HalfDayEnd = Some false
-                  HalfDayStart = Some true
-                  Duration = None
-                  StartDate = Some DateTime.Now
-                  EndDate = Some DateTime.Now
-                  PersonalDayType = None }
-
-            let createRequest = client |> Api.createAbsenceRequest
-            let getRequest = client |> Api.getAbsenceRequest
+    [<Property>]
+    member __.CreationTest model =
+        (task {
+            do! TestServer.clearDb host
 
             do! model
-                |> createRequest
+                |> (Api.createAbsenceRequest client)
                 |> assertOk
                 :> Task
 
-            let! response =
-                1
-                |> getRequest
+            let! allRequests =
+                client
+                |> Api.getAllAbsenceRequests
                 |> assertOk
-                |> deserialize<GetRequest.Private.AbsenceRequestModel>
+                |> deserialize<AbsenceRequestModel list>
 
-            response.Description |> should equal model.Description
-        }
+            allRequests.Length |> should equal 1
+
+            let created = allRequests.Head
+
+            return
+                Some created.Description = model.Description
+                && created.StartDate = model.StartDate.Value
+                && created.EndDate = model.EndDate
+                && created.HalfDayStart = model.HalfDayStart
+                && created.HalfDayEnd = model.HalfDayEnd
+                && created.Type = RequestType.Holiday
+        }).Result

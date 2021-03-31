@@ -5,11 +5,16 @@
     <GenerateProgramFile>false</GenerateProgramFile>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Generators/Generators.fs" />
     <Compile Include="TestHost.fs" />
+    <Compile Include="Infrastructure/TestHostFixture.fs" />
+    <Compile Include="Infrastructure/TestHostCollection.fs" />
     <Compile Include="Tests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="FsCheck" Version="2.15.1" />
+    <PackageReference Include="FsCheck.XUnit" Version="2.15.1" />
     <PackageReference Include="FsUnit" Version="4.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="5.0.4" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />

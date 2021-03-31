@@ -12,8 +12,9 @@ module Routing =
               [ subRoute
                     "/absencerequest"
                     [ GET [ routef "/%i" GetRequest.handler ]
-                      PUT [ route "" (CreateRequest.handler |> bindJson<CreateRequest.Types.AddRequestInputModel>) ]
+                      GET [ route "" GetAllRequests.handler ]
+                      PUT [ route "" (CreateRequest.handler |> bindJson<Types.CreateRequestInputModel>) ]
                       PATCH [ routef
                                   "/%i"
                                   (UpdateRequest.handler
-                                   >> bindJson<UpdateRequest.UpdateRequestInputModel>) ] ] ] ]
+                                   >> bindJson<Types.UpdateRequestInputModel>) ] ] ] ]

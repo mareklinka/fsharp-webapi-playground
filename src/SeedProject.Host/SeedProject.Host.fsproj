@@ -4,7 +4,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Context.fs" />
-    <Compile Include="Handlers\AbsenceRequests\AddRequest.fs" />
+    <Compile Include="Handlers\AbsenceRequests\Types.fs" />
+    <Compile Include="Handlers\AbsenceRequests\CreateRequest.fs" />
+    <Compile Include="Handlers\AbsenceRequests\GetAllRequests.fs" />
     <Compile Include="Handlers\AbsenceRequests\GetRequest.fs" />
     <Compile Include="Handlers\AbsenceRequests\UpdateRequest.fs" />
     <Compile Include="Middleware.fs" />

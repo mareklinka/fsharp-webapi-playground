@@ -18,28 +18,6 @@ open SeedProject.Infrastructure.Logging
 open FSharp.Control.Tasks
 
 module CreateRequest =
-    module Types =
-        type RequestType =
-            | Holiday = 0
-            | DoctorVisit = 1
-            | DoctorVisitWithFamily = 2
-            | Sickday = 3
-            | PersonalDay = 4
-            | Sickness = 5
-            | PandemicSickness = 6
-
-
-        [<CLIMutable>]
-        type AddRequestInputModel =
-            { StartDate: DateTime option
-              EndDate: DateTime option
-              HalfDayStart: bool option
-              HalfDayEnd: bool option
-              Description: string
-              Duration: decimal option
-              PersonalDayType: PersonalDayType option
-              Type: RequestType }
-
     module Private =
         open Types
 
@@ -61,17 +39,21 @@ module CreateRequest =
 
 
         let validate =
-            fun (input: AddRequestInputModel) ->
+            fun (input: CreateRequestInputModel) ->
                 task {
                     return
                         operation {
                             let! t = input.Type |> validateRequestType
+                            let description =
+                                match input.Description with
+                                | Some d -> d
+                                | None -> ""
 
                             return!
                                 match input.StartDate with
                                 | Some startDate ->
                                     Success
-                                        { AbsenceRequestOperations.CreateData.Description = input.Description
+                                        { AbsenceRequestOperations.CreateData.Description = description
                                           AbsenceRequestOperations.CreateData.Duration = input.Duration
                                           AbsenceRequestOperations.CreateData.StartDate = startDate
                                           AbsenceRequestOperations.CreateData.EndDate = input.EndDate
@@ -101,8 +83,7 @@ module CreateRequest =
                     &== (fun _ -> Db.saveChanges ct db)
                     &== (fun _ -> Db.commit ct db)
                     &== (fun _ -> unitTask { SemanticLog.absenceRequestUpdated logger id })
-                    &=! ((fun _ -> setStatusCode 200)
-                         |> Context.apiOutput)
+                    &=! ((fun _ -> setStatusCode 200) |> Context.apiOutput)
                     <| (model)
 
                 return! pipeline next context

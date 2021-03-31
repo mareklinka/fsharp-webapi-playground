@@ -61,6 +61,49 @@ module AbsenceRequestPersistence =
                 }
         }
 
+    let getAllRequests (db: DatabaseContext) ct =
+        task {
+            let! requests =
+                db
+                    .AbsenceRequests
+                    .AsNoTracking()
+                    .ToListAsync(ct)
+
+            return
+                operation {
+                    let mapped =
+                        requests
+                        |> List.ofSeq
+                        |> OperationResult.map (fun r ->
+                            match r with
+                            | r when r.EndDate.HasValue ->
+                                let startDate =
+                                    HolidayDate.create r.StartDate r.IsHalfDayStart
+
+                                let endDate =
+                                    HolidayDate.create r.EndDate.Value r.IsHalfDayEnd
+
+                                Success
+                                    (NewRequest(
+                                        New(
+                                            HolidayRequest
+                                                { Id = Id r.Id
+                                                  Start = startDate
+                                                  End = endDate
+                                                  Description = Description r.Description }
+                                        ))
+                                )
+                            | _ ->
+                                OperationError (
+                                    InvariantBroken HolidayRequestMustHaveEndDate,
+                                    OperationMessage "Invariant broken on the retrieved entity - "
+                                )
+                            )
+
+                    return! mapped
+                }
+        }
+
     let updateEntity (db: DatabaseContext) request =
         task {
             let requestContent = request |> unwrapRequest

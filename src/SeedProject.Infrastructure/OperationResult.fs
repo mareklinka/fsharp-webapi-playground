@@ -8,6 +8,30 @@ module OperationResult =
         | OperationError of Common.OperationError
 
     [<RequireQualifiedAccess>]
+    module OperationResult =
+
+        let apply (fM : OperationResult<'a -> 'b>) (m : OperationResult<'a>) : OperationResult<'b> =
+            let fmResult = fM
+            let mResult = m
+
+            match (fmResult, mResult) with
+            | (Success f, Success mResult) -> Success (f mResult)
+            | (_, ValidationError (code, message)) -> ValidationError (code, message)
+            | (_, OperationError (code, message)) -> OperationError (code, message)
+            | (ValidationError (code, message), _) -> ValidationError (code, message)
+            | (OperationError (code, message), _) -> OperationError (code, message)
+
+        let rec map (f: 'a -> OperationResult<'b>) (list: 'a list) : OperationResult<'b list> =
+            let (<*>) = apply
+            let cons head tail = head :: tail
+
+            match list with
+            | [] ->
+                Success []
+            | head::tail ->
+                Success cons <*> (f head) <*> (map f tail)
+
+    [<RequireQualifiedAccess>]
     module Builder =
         [<System.Diagnostics.DebuggerStepThroughAttribute>]
         type OperationResultBuilder() =

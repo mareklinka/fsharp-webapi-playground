@@ -15,7 +15,7 @@ open SeedProject.Host
 open SeedProject.Infrastructure.Logging
 open SeedProject.Persistence.Model
 
-module GetRequest =
+module GetAllRequests =
     [<RequireQualifiedAccess>]
     module Private =
         open Types
@@ -41,30 +41,34 @@ module GetRequest =
                   HalfDayStart = Some(isStartHalf)
                   HalfDayEnd = Some(isEndHalf)
                   Description = d
-                  Type = Types.RequestType.Holiday }
+                  Type = RequestType.Holiday }
             | _ ->
                 { AbsenceRequestModel.Id = 0
                   StartDate = DateTime.Today
                   EndDate = None
                   HalfDayStart = None
                   HalfDayEnd = None
-                  Description = ""
-                  Type = Types.RequestType.PersonalDay }
+                  Description = "";
+                  Type = RequestType.PersonalDay }
 
-    let handler id : HttpHandler =
+        let toModelList = List.map toModel
+
+    let handler : HttpHandler =
         fun (next: HttpFunc) (context: HttpContext) ->
             let db = context |> Context.resolve<DatabaseContext>
             let ct = Context.cancellationToken context
-            let logger = "GetRequest" |> Context.loggerFactory context
+            let logger = "GetAllRequests" |> Context.loggerFactory context
 
             task {
-                let! pipeline =
-                    DatabaseId.createAsync
-                    &=> AbsenceRequestPersistence.getSingleRequest db ct
-                    &=> (Private.toModel |> Context.asOperation)
+                let g = (Private.toModelList |> Context.asOperation)
+
+                let pipeline =
+                    (fun () -> AbsenceRequestPersistence.getAllRequests db ct)
+                    &=> (Private.toModelList |> Context.asOperation)
                     &== (fun _ -> unitTask { SemanticLog.absenceRequestRetrieved logger id })
                     &=! Context.jsonOutput
-                    <| id
 
-                return! pipeline next context
+                let! pipelineResult = pipeline()
+
+                return! pipelineResult next context
             }

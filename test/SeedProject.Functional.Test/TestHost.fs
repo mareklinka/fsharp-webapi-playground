@@ -11,6 +11,7 @@ open Microsoft.AspNetCore.Hosting
 open Microsoft.Extensions.Hosting
 open Microsoft.AspNetCore.TestHost
 open Microsoft.Extensions.DependencyInjection
+open Microsoft.EntityFrameworkCore
 
 open FSharp.Control.Tasks
 open FsUnit
@@ -33,12 +34,12 @@ module TestServer =
         }
 
     let stop (host: IHost) =
-        task {
+        unitTask {
             do! host.StopAsync()
         }
 
     let migrateDb (host: IHost) =
-        task {
+        unitTask {
             let scopeFactory =
                 host.Services.GetRequiredService<IServiceScopeFactory>()
 
@@ -46,6 +47,18 @@ module TestServer =
             do!
                 scope.ServiceProvider.GetRequiredService<DatabaseContext>()
                 |> Db.migrateDatabase CancellationToken.None
+        }
+
+    let clearDb (host: IHost) =
+        unitTask {
+            let scopeFactory =
+                host.Services.GetRequiredService<IServiceScopeFactory>()
+
+            use scope = scopeFactory.CreateScope()
+
+            let db = scope.ServiceProvider.GetRequiredService<DatabaseContext>()
+            let entityModel = db.Model.GetEntityTypes() |> Seq.find (fun entityType -> entityType.ClrType = typeof<AbsenceRequest>)
+            do! db.Database.ExecuteSqlRawAsync($"DELETE FROM {entityModel.GetTableName()}") :> Task
         }
 
 module Serialization =
@@ -62,11 +75,11 @@ module Serialization =
             return JsonSerializer.Deserialize<'a>(content, jsonOptions)
         }
 
-
 module HttpResponse =
     let assertOk (responseTask: Task<HttpResponseMessage>) =
         task {
             let! response = responseTask
+
             response.StatusCode |> should equal HttpStatusCode.OK
 
             return response
@@ -84,5 +97,8 @@ module Api =
     let getAbsenceRequest (client: HttpClient) (id: int) =
         client.GetAsync($"/api/absencerequest/{id}")
 
-    let createAbsenceRequest (client: HttpClient) (model: Handlers.AbsenceRequests.CreateRequest.Types.AddRequestInputModel) =
+    let getAllAbsenceRequests (client: HttpClient) =
+        client.GetAsync($"/api/absencerequest")
+
+    let createAbsenceRequest (client: HttpClient) (model: Handlers.AbsenceRequests.Types.CreateRequestInputModel) =
         client.PutAsync($"/api/absencerequest", new StringContent(model |> Serialization.serialize))
