@@ -27,6 +27,7 @@ type Startup(configuration: IConfiguration) =
         let jsonOptions = JsonSerializerOptions()
         jsonOptions.Converters.Add(JsonFSharpConverter())
         services.AddSingleton(jsonOptions) |> ignore
+        services.AddHealthChecks() |> ignore
 
         services.AddSingleton<Json.ISerializer, SystemTextJson.Serializer>() |> ignore
 
@@ -46,6 +47,7 @@ type Startup(configuration: IConfiguration) =
             .UseHttpsRedirection()
             .UseRouting()
             .UseAuthorization()
+            .UseEndpoints(fun endpoints -> endpoints.MapHealthChecks("/health") |> ignore)
             .UseGiraffeErrorHandler(Middleware.errorHandler)
             .UseGiraffe(Routing.routes)
         |> ignore
