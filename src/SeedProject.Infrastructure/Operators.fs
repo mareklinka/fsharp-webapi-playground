@@ -28,22 +28,12 @@ module Operators =
                 let! gResult = g c
 
                 return
-                    match (fResult, gResult) with
-                    | (Success fVal, Success gVal) ->
-                        Success ((fVal, gVal))
-                    | (ValidationError error, Success _)
-                    | (Success _, ValidationError error) ->
-                        ValidationError error
-                    | (OperationError error, Success _)
-                    | (Success _, OperationError error) ->
-                        OperationError error
-                    | (OperationError (_, OperationMessage message1), OperationError (_, OperationMessage message2)) ->
-                        OperationError (AggregateError [message1; message2], OperationMessage "Multiple errors occured")
-                    | (ValidationError (_, ValidationMessage message1), ValidationError (_, ValidationMessage message2)) ->
-                        OperationError (AggregateError [message1; message2], OperationMessage "Multiple errors occured")
-                    | (OperationError (_, OperationMessage oeMessage), ValidationError (_, ValidationMessage veMessage))
-                    | (ValidationError (_, ValidationMessage veMessage), OperationError (_, OperationMessage oeMessage)) ->
-                        OperationError (AggregateError [veMessage; oeMessage], OperationMessage "Multiple errors occured")
+                    operation {
+                       let! fValue = fResult
+                       let! gValue = gResult
+
+                       return (fValue, gValue)
+                    }
             }
 
     let private terminate (f : OperationStep<'a, 'b>) (g: 'b -> 'c) (h: SerializationModel -> 'c) (i: SerializationModel -> 'c) =

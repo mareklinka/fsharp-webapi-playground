@@ -17,7 +17,6 @@ module Common =
         | ApprovalOfRejectedRequest
         | RejectionOfApprovedRequest
         | UpdateForbidden
-        | AggregateError of string list
         | NotFound of DatabaseId
         | InvariantBroken of InvariantType
 
@@ -47,7 +46,6 @@ module Common =
             | ApprovalOfRejectedRequest -> (nameof(ApprovalOfRejectedRequest), None)
             | RejectionOfApprovedRequest -> (nameof(RejectionOfApprovedRequest), None)
             | UpdateForbidden -> (nameof(UpdateForbidden), None)
-            | AggregateError s -> (nameof(AggregateError), s |> String.concat "\n" |> Some)
             | NotFound (Id id) -> ($"{nameof(NotFound)}", $"{id}" |> Some)
             | InvariantBroken invariant -> (nameof(InvariantBroken), invariant |> renderInvariant |> Some)
 
