@@ -4,10 +4,13 @@ open System.Text.Json
 open System.Text.Json.Serialization
 
 open Giraffe
+open Giraffe.EndpointRouting
 
 open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Hosting
 open Microsoft.AspNetCore.Http
+open Microsoft.AspNetCore.Authentication.JwtBearer
+open Microsoft.AspNetCore.Authentication
 open Microsoft.EntityFrameworkCore
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
@@ -15,12 +18,9 @@ open Microsoft.Extensions.Hosting
 open Microsoft.Identity.Web
 
 open SeedProject.Persistence.Model
-open Giraffe.EndpointRouting
-open Microsoft.AspNetCore.Authentication.JwtBearer
 
 type Startup(configuration: IConfiguration) =
     let corsPolicyName = "CorsPolicy"
-    let authenticationPolicyName = "ClientAuthPolicy"
 
     let configureCommonServices (services: IServiceCollection) =
         services.AddAuthorization() |> ignore
@@ -30,12 +30,23 @@ type Startup(configuration: IConfiguration) =
         jsonOptions.Converters.Add(JsonFSharpConverter())
         services.AddSingleton(jsonOptions) |> ignore
         services.AddHealthChecks() |> ignore
+        services.AddCors(
+            fun options ->
+                options.AddPolicy(
+                    corsPolicyName,
+                        (fun builder ->
+                                builder
+                                    .AllowAnyOrigin()
+                                    .AllowAnyMethod()
+                                    .WithHeaders("authorization", "content-type")
+                                    |> ignore
+                                ()
+                            )
+                )
+        ) |> ignore
+        services.AddAuthorization() |> ignore
 
         services.AddSingleton<Json.ISerializer, SystemTextJson.Serializer>() |> ignore
-
-        services
-            .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddMicrosoftIdentityWebApi(configuration.GetSection("AzureAd")) |> ignore
 
         services.AddDbContext<DatabaseContext>
             (fun options ->
@@ -48,6 +59,23 @@ type Startup(configuration: IConfiguration) =
 
     // This method gets called by the runtime. Use this method to add services to the container.
     member __.ConfigureDevelopmentServices(services: IServiceCollection) =
+        services |> configureCommonServices
+        services
+            .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddMicrosoftIdentityWebApi(configuration.GetSection("AzureAd")) |> ignore
+        ()
+
+    member __.ConfigureFunctionalTestsServices(services: IServiceCollection) =
+        services |> configureCommonServices
+        services
+            .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddScheme<AuthenticationSchemeOptions, Authentication.TestingAuthenticationHandler>(
+                JwtBearerDefaults.AuthenticationScheme,
+                System.Action<_>(ignore))
+            |> ignore
+        ()
+
+    member __.ConfigureServices(services: IServiceCollection) =
         services |> configureCommonServices
         services.AddCors(
             fun options ->

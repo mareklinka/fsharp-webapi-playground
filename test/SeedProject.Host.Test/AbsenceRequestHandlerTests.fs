@@ -13,6 +13,6 @@ module HelperMethods =
         let result = value |> DatabaseId.createAsync |> Task.result
 
         match result with
-        | OperationResult.Success (Id id) -> id = value
+        | Success (Id id) -> id = value
         | _ -> value < 1
 
