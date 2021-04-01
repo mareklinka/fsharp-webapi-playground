@@ -12,15 +12,17 @@ open Microsoft.EntityFrameworkCore
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Hosting
+open Microsoft.Identity.Web
 
 open SeedProject.Persistence.Model
 open Giraffe.EndpointRouting
+open Microsoft.AspNetCore.Authentication.JwtBearer
 
 type Startup(configuration: IConfiguration) =
-    member _.Configuration = configuration
+    let corsPolicyName = "CorsPolicy"
+    let authenticationPolicyName = "ClientAuthPolicy"
 
-    // This method gets called by the runtime. Use this method to add services to the container.
-    member this.ConfigureServices(services: IServiceCollection) =
+    let configureCommonServices (services: IServiceCollection) =
         services.AddAuthorization() |> ignore
         services.AddGiraffe() |> ignore
 
@@ -31,11 +33,36 @@ type Startup(configuration: IConfiguration) =
 
         services.AddSingleton<Json.ISerializer, SystemTextJson.Serializer>() |> ignore
 
+        services
+            .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddMicrosoftIdentityWebApi(configuration.GetSection("AzureAd")) |> ignore
+
         services.AddDbContext<DatabaseContext>
             (fun options ->
-                options.UseSqlServer(this.Configuration.GetConnectionString("DefaultConnection"))
+                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"))
                 |> ignore)
         |> ignore
+        ()
+
+    member _.Configuration = configuration
+
+    // This method gets called by the runtime. Use this method to add services to the container.
+    member __.ConfigureDevelopmentServices(services: IServiceCollection) =
+        services |> configureCommonServices
+        services.AddCors(
+            fun options ->
+                options.AddPolicy(
+                    corsPolicyName,
+                        (fun builder ->
+                                builder
+                                    .AllowAnyOrigin()
+                                    .AllowAnyMethod()
+                                    .WithHeaders("authorization", "content-type")
+                                    |> ignore
+                                ()
+                            )
+                )
+        ) |> ignore
         ()
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -46,7 +73,9 @@ type Startup(configuration: IConfiguration) =
         app
             .UseHttpsRedirection()
             .UseRouting()
+            .UseAuthentication()
             .UseAuthorization()
+            .UseCors(corsPolicyName)
             .UseEndpoints(fun endpoints -> endpoints.MapHealthChecks("/health") |> ignore)
             .UseGiraffeErrorHandler(Middleware.errorHandler)
             .UseGiraffe(Routing.routes)

@@ -4,15 +4,18 @@ open Microsoft.AspNetCore.Http
 
 open Giraffe
 
+open SeedProject.Infrastructure
 open SeedProject.Infrastructure.Common
-open SeedProject.Infrastructure.Operators
-open SeedProject.Domain.Constructors
+open SeedProject.Infrastructure.Logging
+
 open SeedProject.Persistence
 open SeedProject.Persistence.Model
-open SeedProject.Host
+
 open SeedProject.Domain
-open SeedProject.Infrastructure
-open SeedProject.Infrastructure.Logging
+open SeedProject.Domain.Constructors
+
+open SeedProject.Host
+open SeedProject.Host.Pipeline.Operators
 
 open FSharp.Control.Tasks
 

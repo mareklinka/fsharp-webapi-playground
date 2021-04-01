@@ -1,15 +1,17 @@
 namespace SeedProject.Host.Handlers.AbsenceRequests
 
-open FSharp.Control.Tasks
 open Microsoft.AspNetCore.Http
+
+open FSharp.Control.Tasks
 
 open Giraffe.Core
 
-open SeedProject.Infrastructure.Operators
 open SeedProject.Persistence
-open SeedProject.Host
-open SeedProject.Infrastructure.Logging
 open SeedProject.Persistence.Model
+open SeedProject.Infrastructure.Logging
+
+open SeedProject.Host
+open SeedProject.Host.Pipeline.Operators
 
 module GetAllRequests =
     let toModelList = List.map CommonMethods.toModel

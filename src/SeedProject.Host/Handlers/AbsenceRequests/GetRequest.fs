@@ -1,17 +1,20 @@
 namespace SeedProject.Host.Handlers.AbsenceRequests
 
-open System
-open FSharp.Control.Tasks
 open Microsoft.AspNetCore.Http
+
+open FSharp.Control.Tasks
 
 open Giraffe.Core
 
-open SeedProject.Infrastructure.Operators
-open SeedProject.Domain.Constructors
 open SeedProject.Persistence
-open SeedProject.Host
-open SeedProject.Infrastructure.Logging
 open SeedProject.Persistence.Model
+
+open SeedProject.Infrastructure.Logging
+
+open SeedProject.Domain.Constructors
+
+open SeedProject.Host
+open SeedProject.Host.Pipeline.Operators
 
 module GetRequest =
     let handler id : HttpHandler =
