@@ -16,13 +16,16 @@ open FSharp.Control.Tasks
 open SeedProject.Host
 open SeedProject.Persistence.Model
 open SeedProject.Persistence
+open Microsoft.Extensions.DependencyInjection.Extensions
 
 module TestServer =
     let private testHostBuilder =
         Host
             .CreateDefaultBuilder()
             .ConfigureAppConfiguration(fun i -> i.AddUserSecrets<Startup>() |> ignore)
-            .ConfigureWebHostDefaults(fun h -> h.UseTestServer().UseStartup<Startup>() |> ignore)
+            .ConfigureWebHostDefaults(fun builder ->
+                builder.UseTestServer().UseStartup<Startup>()
+                |> ignore)
             .UseEnvironment("FunctionalTests")
 
     let start () =

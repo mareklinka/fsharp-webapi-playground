@@ -6,8 +6,7 @@ open SeedProject.Host.Handlers.AbsenceRequests.Types
 
 module Generators =
     let createRequestInputModelGenerator =
-        let values =
-            Arb.generate<System.DateTime * bool * bool * string>
+        let values = Arb.generate<System.DateTime * bool * bool * string>
 
         let timeSpanGen = Gen.choose(0, 24 * 100) |> Gen.map (fun x -> System.TimeSpan.FromHours(x |> float))
 
