@@ -8,6 +8,7 @@
     <Compile Include="Pipeline.fs" />
     <Compile Include="Handlers\AbsenceRequests\Types.fs" />
     <Compile Include="Handlers\AbsenceRequests\CreateRequest.fs" />
+    <Compile Include="Handlers\AbsenceRequests\DeleteRequest.fs" />
     <Compile Include="Handlers\AbsenceRequests\GetAllRequests.fs" />
     <Compile Include="Handlers\AbsenceRequests\GetRequest.fs" />
     <Compile Include="Handlers\AbsenceRequests\UpdateRequest.fs" />

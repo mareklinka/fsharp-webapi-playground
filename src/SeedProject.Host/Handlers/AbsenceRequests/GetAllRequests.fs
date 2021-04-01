@@ -24,9 +24,9 @@ module GetAllRequests =
 
             task {
                 let pipeline =
-                    (fun () -> AbsenceRequestPersistence.getAllRequests db ct)
+                    (fun () -> AbsenceRequestStore.getAllRequests db ct)
                     &=> Pipeline.transform toModelList
-                    &=> Pipeline.sideEffect (fun items -> SemanticLog.absenceRequestsRetrieved logger (items |> List.length))
+                    &=> Pipeline.sideEffect (fun items -> Log.AbsenceRequests.listRetrieved logger (items |> List.length))
                     &=! Pipeline.writeJson
 
                 let! pipelineResult = pipeline()

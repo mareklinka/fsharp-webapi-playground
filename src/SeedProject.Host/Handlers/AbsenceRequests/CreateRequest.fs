@@ -37,7 +37,6 @@ module CreateRequest =
                         | _ -> ValidationError(IncompleteData, ValidationMessage "Start date is missing")
                 }
 
-
         let validate =
             fun (input: CreateRequestInputModel) ->
                 task {
@@ -75,11 +74,11 @@ module CreateRequest =
                     Private.validate
                     &=> Pipeline.beginTransaction ct db
                     &=> AbsenceRequestOperations.createRequest
-                    &=> AbsenceRequestPersistence.addEntity db
+                    &=> AbsenceRequestStore.addEntity db
                     &=> Pipeline.saveChanges ct db
                     &=> Pipeline.commit ct db
                     &=> Pipeline.transform (fun ar -> ar.Id)
-                    &=> Pipeline.sideEffect (fun id -> SemanticLog.absenceRequestCreated logger id)
+                    &=> Pipeline.sideEffect (fun id -> Log.AbsenceRequests.created logger id)
                     &=! Pipeline.writeJson
                     <| model
 

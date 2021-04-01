@@ -51,16 +51,16 @@ module UpdateRequest =
                 let ct = Context.cancellationToken context
                 let logger = "UpdateRequest" |> Context.loggerFactory context
 
-                let loadRequest = DatabaseId.createAsync &=> AbsenceRequestPersistence.getSingleRequest db ct
+                let loadRequest = DatabaseId.createAsync &=> AbsenceRequestStore.getSingleRequest db ct
 
                 let! pipeline =
                     loadRequest >&< Private.validate
                     &=> Pipeline.beginTransaction ct db
                     &=> AbsenceRequestOperations.updateRequest
-                    &=> AbsenceRequestPersistence.updateEntity db
+                    &=> AbsenceRequestStore.updateEntity db
                     &=> Pipeline.saveChanges ct db
                     &=> Pipeline.commit ct db
-                    &=> Pipeline.sideEffect (fun _ -> SemanticLog.absenceRequestUpdated logger id)
+                    &=> Pipeline.sideEffect (fun _ -> Log.AbsenceRequests.updated logger id)
                     &=! Pipeline.response (fun _ -> setStatusCode 200)
                     <| (id, model)
 

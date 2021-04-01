@@ -5,6 +5,7 @@
     <GenerateProgramFile>false</GenerateProgramFile>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="TestModule.fs" />
     <Compile Include="Generators/Generators.fs" />
     <Compile Include="TestHost.fs" />
     <Compile Include="Infrastructure/Combinators.fs" />

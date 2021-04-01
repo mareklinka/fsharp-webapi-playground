@@ -12,15 +12,23 @@ module Logging =
         type LogSink = string -> LogLevel -> unit
 
     [<RequireQualifiedAccess>]
-    module SemanticLog =
-        let absenceRequestUpdated (writer: Types.LogSink) id =
-            writer $"Absence request with ID %i{id} has been updated" Types.Information
+    module Log =
+        open Types
 
-        let absenceRequestRetrieved (writer: Types.LogSink) id =
-            writer $"Retrieving absence request with ID %i{id}" Types.Information
+        [<RequireQualifiedAccess>]
+        module AbsenceRequests =
+            let updated (writer: Types.LogSink) id =
+                writer $"Absence request with ID %i{id} has been updated" Information
 
-        let absenceRequestsRetrieved (writer: Types.LogSink) count =
-            writer $"Retrieving %i{count} absence requests" Types.Information
+            let retrieved (writer: Types.LogSink) id =
+                writer $"Retrieving absence request with ID %i{id}" Information
 
-        let absenceRequestCreated (writer: Types.LogSink) id =
-            writer $"A new absence request with id %i{id} has been created" Types.Information
+            let listRetrieved (writer: Types.LogSink) count =
+                writer $"Retrieving %i{count} absence requests" Information
+
+            let created (writer: Types.LogSink) id =
+                writer $"A new absence request with id %i{id} has been created" Information
+
+            let deleted (writer: Types.LogSink) id =
+                writer $"A new absence request with id %i{id} has been deleted" Information
+

@@ -17,6 +17,3 @@ module public Db =
     let commit ct (context: DbContext) =
         context.Database.CommitTransactionAsync(ct)
 
-    let set<'a when 'a: not struct> (context: DbContext) = context.Set<'a>()
-
-    let attach<'a when 'a: not struct> (context: DbContext) entity = entity |> context.Set<'a>().Attach

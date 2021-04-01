@@ -41,7 +41,7 @@ module Authorization =
 
 [<RequireQualifiedAccess>]
 module Routing =
-    let requriesProperScope =
+    let requiresProperScope =
         authorizeRequest Authorization.clientScopePredicate (setStatusCode 401)
 
     let routes =
@@ -49,16 +49,17 @@ module Routing =
               "/api"
               [ subRoute
                     "/absencerequest"
-                    [ GET [ routef "/%i" (fun id -> requriesProperScope >=> GetRequest.handler id) ]
-                      GET [ route "" (requriesProperScope >=> GetAllRequests.handler) ]
+                    [ GET [ routef "/%i" (fun id -> requiresProperScope >=> GetRequest.handler id) ]
+                      GET [ route "" (requiresProperScope >=> GetAllRequests.handler) ]
                       PUT [ route
                                 ""
-                                (requriesProperScope
+                                (requiresProperScope
                                  >=> (CreateRequest.handler
                                       |> bindJson<Types.CreateRequestInputModel>)) ]
                       PATCH [ routef
                                   "/%i"
                                   (fun id ->
-                                      requriesProperScope
+                                      requiresProperScope
                                       >=> (UpdateRequest.handler id
-                                           |> bindJson<Types.UpdateRequestInputModel>)) ] ] ] ]
+                                           |> bindJson<Types.UpdateRequestInputModel>)) ]
+                      DELETE [ routef "/%i" (fun id -> requiresProperScope >=> DeleteRequest.handler id) ] ] ] ]

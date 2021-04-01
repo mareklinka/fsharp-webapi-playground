@@ -11,7 +11,7 @@ open SeedProject.Persistence.Model
 open SeedProject.Domain.Constructors
 
 [<RequireQualifiedAccess>]
-module AbsenceRequestPersistence =
+module AbsenceRequestStore =
     let private unwrapRequest request =
         match request with
         | NewRequest (New r) -> r
@@ -149,8 +149,7 @@ module AbsenceRequestPersistence =
                                             Start = s
                                             End = e } -> failwith "Not Implemented"
 
-            let e = entityUpdate |> Db.attach db
-            e.State <- EntityState.Modified
+            entityUpdate |> db.Update |> ignore
 
             return Success request
         }
@@ -201,4 +200,12 @@ module AbsenceRequestPersistence =
             newEntity |> db.Add |> ignore
 
             return Success newEntity
+        }
+
+    let deleteEntity (db: DatabaseContext) id =
+        task {
+            let deleteEntity = new AbsenceRequest(Id = id)
+            deleteEntity |> db.Remove |> ignore
+
+            return Success ()
         }

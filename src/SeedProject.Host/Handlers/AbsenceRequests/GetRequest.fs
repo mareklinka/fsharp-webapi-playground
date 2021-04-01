@@ -26,9 +26,9 @@ module GetRequest =
             task {
                 let! pipeline =
                     DatabaseId.createAsync
-                    &=> AbsenceRequestPersistence.getSingleRequest db ct
+                    &=> AbsenceRequestStore.getSingleRequest db ct
                     &=> Pipeline.transform CommonMethods.toModel
-                    &=> Pipeline.sideEffect (fun _ -> SemanticLog.absenceRequestRetrieved logger id)
+                    &=> Pipeline.sideEffect (fun _ -> Log.AbsenceRequests.retrieved logger id)
                     &=! Pipeline.writeJson
                     <| id
 
