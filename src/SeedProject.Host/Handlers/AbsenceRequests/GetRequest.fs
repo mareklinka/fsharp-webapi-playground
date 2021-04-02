@@ -6,16 +6,20 @@ open FSharp.Control.Tasks
 
 open Giraffe.Core
 
+open SeedProject.Architecture.StructurizrExtensions
+open SeedProject.Architecture.Common.Constants
 open SeedProject.Persistence
 open SeedProject.Persistence.Model
-
 open SeedProject.Infrastructure.Logging
-
 open SeedProject.Domain.Constructors
-
 open SeedProject.Host
 open SeedProject.Host.Pipeline.Operators
 
+open Structurizr.Annotations
+
+[<Component(Description = "Retrieves a single request", Technology = "F#")>]
+[<TypeUsesComponent(nameof AbsenceRequestStore, Description = "Reads requests using")>]
+[<UsedByPerson(MainUserName, Description = "Calls endpoint", Technology = "JSON/HTTPS")>]
 module GetRequest =
     let handler id : HttpHandler =
         fun (next: HttpFunc) (context: HttpContext) ->

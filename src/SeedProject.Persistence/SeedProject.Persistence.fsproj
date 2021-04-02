@@ -9,5 +9,6 @@
   <ItemGroup>
     <ProjectReference Include="..\SeedProject.Persistence.Model\SeedProject.Persistence.Model.csproj" />
     <ProjectReference Include="..\SeedProject.Domain\SeedProject.Domain.fsproj" />
+    <ProjectReference Include="..\SeedProject.Architecture.Common\SeedProject.Architecture.Common.fsproj" />
   </ItemGroup>
 </Project>

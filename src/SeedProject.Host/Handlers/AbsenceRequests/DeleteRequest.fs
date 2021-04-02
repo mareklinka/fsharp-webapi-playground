@@ -15,6 +15,13 @@ open SeedProject.Host.Pipeline.Operators
 
 open FSharp.Control.Tasks
 
+open Structurizr.Annotations
+open SeedProject.Architecture.StructurizrExtensions
+open SeedProject.Architecture.Common.Constants
+
+[<Component(Description = "Deletes a request", Technology = "F#")>]
+[<TypeUsesComponent(nameof AbsenceRequestStore, Description = "Deletes requests using")>]
+[<UsedByPerson(MainUserName, Description = "Calls endpoint", Technology = "JSON/HTTPS")>]
 module DeleteRequest =
     let handler id : HttpHandler =
         fun (next: HttpFunc) (context: HttpContext) ->

@@ -9,7 +9,12 @@ open SeedProject.Infrastructure
 open SeedProject.Domain.AbsenceRequests.Types
 open SeedProject.Persistence.Model
 open SeedProject.Domain.Constructors
+open SeedProject.Architecture.Common.Constants
 
+open Structurizr.Annotations
+
+[<Component(Description = "Reads and writes domain objects from/to storage", Technology = "F#")>]
+[<UsesContainer(DatabaseName, Description = "Reads/writes data from/to", Technology = "TCP/IP")>]
 [<RequireQualifiedAccess>]
 module AbsenceRequestStore =
     let private unwrapRequest request =

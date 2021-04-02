@@ -6,13 +6,19 @@ open FSharp.Control.Tasks
 
 open Giraffe.Core
 
+open SeedProject.Architecture.StructurizrExtensions
+open SeedProject.Architecture.Common.Constants
 open SeedProject.Persistence
 open SeedProject.Persistence.Model
 open SeedProject.Infrastructure.Logging
-
 open SeedProject.Host
 open SeedProject.Host.Pipeline.Operators
 
+open Structurizr.Annotations
+
+[<Component(Description = "Retrieves existing requests", Technology = "F#")>]
+[<TypeUsesComponent(nameof AbsenceRequestStore, Description = "Reads requests using")>]
+[<UsedByPerson(MainUserName, Description = "Calls endpoint", Technology = "JSON/HTTPS")>]
 module GetAllRequests =
     let toModelList = List.map CommonMethods.toModel
 

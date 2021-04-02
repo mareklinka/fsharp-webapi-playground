@@ -11,12 +11,19 @@ open SeedProject.Infrastructure.Logging
 open SeedProject.Persistence
 open SeedProject.Persistence.Model
 open SeedProject.Domain
-
 open SeedProject.Host
 open SeedProject.Host.Pipeline.Operators
+open SeedProject.Architecture.StructurizrExtensions
+open SeedProject.Architecture.Common.Constants
 
 open FSharp.Control.Tasks
 
+open Structurizr.Annotations
+
+[<Component(Description = "Creates a new request", Technology = "F#")>]
+[<TypeUsesComponent(nameof AbsenceRequestOperations, Description = "Creates domain objects using")>]
+[<TypeUsesComponent(nameof AbsenceRequestStore, Description = "Persists requests using")>]
+[<UsedByPerson(MainUserName, Description = "Calls endpoint", Technology = "JSON/HTTPS")>]
 module CreateRequest =
     module Private =
         open Types

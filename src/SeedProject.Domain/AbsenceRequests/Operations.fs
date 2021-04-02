@@ -7,7 +7,9 @@ open AbsenceRequests.Types
 open SeedProject.Infrastructure.Common
 open SeedProject.Infrastructure
 open SeedProject.Domain.Constructors
+open Structurizr.Annotations
 
+[<Component(Description = "Domain operations", Technology = "F#")>]
 module AbsenceRequestOperations =
     type RequestType =
         | Holiday
@@ -176,10 +178,10 @@ module AbsenceRequestOperations =
 
     let approveRequest request =
         match request with
-        | NewRequest r -> r |> approveNewRequest |> OperationResult.Success
-        | ApprovedRequest r -> r |> OperationResult.Success
+        | NewRequest r -> r |> approveNewRequest |> Success
+        | ApprovedRequest r -> r |> Success
         | RejectedRequest _ ->
-            OperationResult.OperationError(
+            OperationError(
                 ApprovalOfRejectedRequest,
                 OperationMessage "The request cannot be approved as it has already been rejected"
             )
@@ -189,7 +191,7 @@ module AbsenceRequestOperations =
         | NewRequest r -> r |> rejectNewRequest |> Success
         | RejectedRequest r -> r |> Success
         | ApprovedRequest _ ->
-            OperationResult.OperationError(
+            OperationError(
                 RejectionOfApprovedRequest,
                 OperationMessage "The request cannot be rejected as it has already been approved"
             )

@@ -4,21 +4,26 @@ open Microsoft.AspNetCore.Http
 
 open Giraffe
 
+open SeedProject.Architecture.StructurizrExtensions
+open SeedProject.Architecture.Common.Constants
 open SeedProject.Infrastructure
 open SeedProject.Infrastructure.Common
 open SeedProject.Infrastructure.Logging
-
 open SeedProject.Persistence
 open SeedProject.Persistence.Model
-
 open SeedProject.Domain
 open SeedProject.Domain.Constructors
-
 open SeedProject.Host
 open SeedProject.Host.Pipeline.Operators
 
 open FSharp.Control.Tasks
 
+open Structurizr.Annotations
+
+[<Component(Description = "Updates a single request", Technology = "F#")>]
+[<TypeUsesComponent(nameof AbsenceRequestStore, Description = "Reads and updates requests using")>]
+[<TypeUsesComponent(nameof AbsenceRequestOperations, Description = "Creates domain objects using")>]
+[<TypeUsesComponent(MainUserName, Description = "Calls endpoint", Technology = "JSON/HTTPS")>]
 module UpdateRequest =
     module Private =
         open Types

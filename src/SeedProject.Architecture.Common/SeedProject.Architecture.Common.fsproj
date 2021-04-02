@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Constants.fs" />
+    <Compile Include="TypeUsesComponentAttribute.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Structurizr.Annotations" Version="0.9.3" />
+  </ItemGroup>
+</Project>
