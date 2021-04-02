@@ -21,8 +21,8 @@ open FSharp.Control.Tasks
 open Structurizr.Annotations
 
 [<Component(Description = "Creates a new request", Technology = "F#")>]
-[<TypeUsesComponent(nameof AbsenceRequestOperations, Description = "Creates domain objects using")>]
-[<TypeUsesComponent(nameof AbsenceRequestStore, Description = "Persists requests using")>]
+[<UsesComponentEx(nameof AbsenceRequestOperations, Description = "Creates domain objects using")>]
+[<UsesComponentEx(nameof AbsenceRequestStore, Description = "Persists requests using TYTYTY")>]
 [<UsedByPerson(MainUserName, Description = "Calls endpoint", Technology = "JSON/HTTPS")>]
 module CreateRequest =
     module Private =
@@ -65,7 +65,6 @@ module CreateRequest =
                                           AbsenceRequestOperations.CreateData.Type = t }
                                 | None -> ValidationError(IncompleteData, ValidationMessage "Start date is missing")
                         }
-
                 }
 
     let handler model : HttpHandler =

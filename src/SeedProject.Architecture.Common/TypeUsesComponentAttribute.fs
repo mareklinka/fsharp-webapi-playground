@@ -3,8 +3,8 @@ namespace SeedProject.Architecture.StructurizrExtensions
 open System
 
 [<AllowNullLiteral>]
-[<AttributeUsage(AttributeTargets.Class, AllowMultiple = true)>]
-type TypeUsesComponentAttribute(t: string) =
+[<AttributeUsage(AttributeTargets.Class ||| AttributeTargets.Method, AllowMultiple = true)>]
+type UsesComponentExAttribute(t: string) =
     inherit Attribute()
 
     member val ComponentName : string = t with get, set

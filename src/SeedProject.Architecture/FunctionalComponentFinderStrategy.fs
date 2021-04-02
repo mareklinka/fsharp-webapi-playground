@@ -16,11 +16,7 @@ type FunctionalComponentFinderStrategy() =
     let mutable componentFinder : ComponentFinder = null
     let componentsFound = new HashSet<Component>()
 
-    let addUsesComponentRelationship
-        (sourceType: Type)
-        (destinationType: Type)
-        (annotation: TypeUsesComponentAttribute)
-        =
+    let addUsesComponentRelationship (sourceType: Type) (destinationType: Type) description technology =
         let source =
             componentFinder.Container.GetComponentOfType(sourceType.AssemblyQualifiedName)
 
@@ -38,7 +34,7 @@ type FunctionalComponentFinderStrategy() =
 
             match relationships.Count with
             | 0 ->
-                source.Uses(destination, annotation.Description, annotation.Technology)
+                source.Uses(destination, description, technology)
                 |> ignore
             | _ ->
                 relationships
@@ -46,28 +42,71 @@ type FunctionalComponentFinderStrategy() =
                     (fun r ->
                         match r.Description with
                         | null
-                        | "" -> source.Model.ModifyRelationship(r, annotation.Description, annotation.Technology)
+                        | "" -> source.Model.ModifyRelationship(r, description, technology)
                         | _ -> ())
 
                 ()
 
     let findUsesComponentAnnotations (ce: CodeElement) =
+        let t = typeRepository.GetType(ce.Type)
+
+        match t with
+        | null -> ()
+        | _ ->
+            t.GetRuntimeFields()
+            |> Seq.iter
+                (fun f ->
+                    let annotation =
+                        f.GetCustomAttribute<UsesComponentAttribute>()
+
+                    match annotation with
+                    | null -> ()
+                    | _ -> addUsesComponentRelationship t f.FieldType annotation.Description annotation.Technology)
+
+            t.GetRuntimeProperties()
+            |> Seq.iter
+                (fun p ->
+                    let annotation =
+                        p.GetCustomAttribute<UsesComponentAttribute>()
+
+                    match annotation with
+                    | null -> ()
+                    | _ -> addUsesComponentRelationship t p.PropertyType annotation.Description annotation.Technology)
+
+            t.GetRuntimeMethods()
+            |> (Seq.map (fun m -> m.GetParameters()) >> Seq.concat)
+            |> Seq.iter
+                (fun p ->
+                    let annotation =
+                        p.GetCustomAttribute<UsesComponentAttribute>()
+
+                    match annotation with
+                    | null -> ()
+                    | _ -> addUsesComponentRelationship t p.ParameterType annotation.Description annotation.Technology)
+
+    let findUsesComponentExAnnotations (ce: CodeElement) =
         let sourceType = typeRepository.GetType(ce.Type)
 
         match sourceType with
         | null -> ()
         | _ ->
-            let attrs =
-                sourceType.GetCustomAttributes<TypeUsesComponentAttribute>()
+            let typeAttributes =
+                sourceType.GetCustomAttributes<UsesComponentExAttribute>()
 
-            attrs
+            let methodAttributes =
+                sourceType.GetRuntimeMethods()
+                |> (Seq.map (fun p -> p.GetCustomAttributes<UsesComponentExAttribute>()) >> Seq.concat)
+                |> Seq.filter (fun a -> a <> null)
+
+            typeAttributes
+            |> Seq.append methodAttributes
             |> Seq.iter
                 (fun attribute ->
                     let target =
                         componentsFound.SingleOrDefault(fun c -> c.Name = attribute.ComponentName)
 
                     let destinationType = typeRepository.GetType(target.Type)
-                    addUsesComponentRelationship sourceType destinationType attribute)
+                    addUsesComponentRelationship sourceType destinationType attribute.Description attribute.Technology)
 
     let findContainerByNameOrCanonicalNameOrId (c: Component) (name: string) =
         let container =
@@ -138,6 +177,7 @@ type FunctionalComponentFinderStrategy() =
                     ce.Visibility <- typeRepository.FindVisibility(ce.Type)
                     ce.Category <- typeRepository.FindCategory(ce.Type)
                     findUsesComponentAnnotations ce
+                    findUsesComponentExAnnotations ce
                     findUsesContainerAnnotations ce
                     findUsedByPersonAnnotations ce)
 
