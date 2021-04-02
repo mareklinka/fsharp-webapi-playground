@@ -35,6 +35,44 @@
                 "reveal": "always"
             },
             "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "performance-test",
+            "command": "dotnet",
+            "type": "shell",
+            "args": [
+                "run",
+                "-c",
+                "Release"
+            ],
+            "group": "test",
+            "presentation": {
+                "reveal": "always"
+            },
+            "options": {
+                "cwd": "test/SeedProject.Performance.Test"
+            },
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "create-performance-baseline",
+            "command": "dotnet",
+            "type": "shell",
+            "args": [
+                "run",
+                "-c",
+                "Release",
+                "--",
+                "-baseline"
+            ],
+            "group": "none",
+            "presentation": {
+                "reveal": "always"
+            },
+            "options": {
+                "cwd": "test/SeedProject.Performance.Test"
+            },
+            "problemMatcher": "$msCompile"
         }
     ]
 }

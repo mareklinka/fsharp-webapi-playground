@@ -7,6 +7,7 @@ open Xunit.Abstractions
 
 open SeedProject.Functional.Infrastructure
 open SeedProject.Host.Handlers.AbsenceRequests.Types
+open SeedProject.Functional.TestHost
 
 open FsCheck.Xunit
 open Generators

@@ -9,8 +9,6 @@ open Structurizr
 open Structurizr.Analysis
 open Structurizr.Annotations
 
-open SeedProject.Architecture.StructurizrExtensions
-
 type FunctionalComponentFinderStrategy() =
     let mutable typeRepository : ITypeRepository = null
     let mutable componentFinder : ComponentFinder = null
@@ -74,7 +72,7 @@ type FunctionalComponentFinderStrategy() =
                     | _ -> addUsesComponentRelationship t p.PropertyType annotation.Description annotation.Technology)
 
             t.GetRuntimeMethods()
-            |> (Seq.map (fun m -> m.GetParameters()) >> Seq.concat)
+            |> Seq.collect (fun m -> m.GetParameters())
             |> Seq.iter
                 (fun p ->
                     let annotation =
@@ -95,7 +93,7 @@ type FunctionalComponentFinderStrategy() =
 
             let methodAttributes =
                 sourceType.GetRuntimeMethods()
-                |> (Seq.map (fun p -> p.GetCustomAttributes<UsesComponentExAttribute>()) >> Seq.concat)
+                |> Seq.collect (fun p -> p.GetCustomAttributes<UsesComponentExAttribute>())
                 |> Seq.filter (fun a -> a <> null)
 
             typeAttributes
@@ -171,7 +169,7 @@ type FunctionalComponentFinderStrategy() =
     interface ComponentFinderStrategy with
         override __.AfterFindComponents() : unit =
             componentsFound
-            |> (Seq.map (fun c -> c.CodeElements) >> Seq.concat)
+            |> Seq.collect (fun c -> c.CodeElements)
             |> Seq.iter
                 (fun ce ->
                     ce.Visibility <- typeRepository.FindVisibility(ce.Type)

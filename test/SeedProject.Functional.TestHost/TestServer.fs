@@ -1,4 +1,4 @@
-namespace SeedProject.Functional
+﻿namespace SeedProject.Functional.TestHost
 
 open System.Net.Http
 open System.Threading.Tasks
@@ -16,7 +16,8 @@ open FSharp.Control.Tasks
 open SeedProject.Host
 open SeedProject.Persistence.Model
 open SeedProject.Persistence
-open Microsoft.Extensions.DependencyInjection.Extensions
+open System.Text.Json
+open System.Text.Json.Serialization
 
 module TestServer =
     let private testHostBuilder =
@@ -64,15 +65,3 @@ module TestServer =
 
             do! db.Database.ExecuteSqlRawAsync($"DELETE FROM {entityModel.GetTableName()}") :> Task
         }
-
-module Api =
-    let getAbsenceRequest (client: HttpClient) (id: int) =
-        client.GetAsync($"/api/absencerequest/{id}")
-
-    let getAllAbsenceRequests (client: HttpClient) = client.GetAsync($"/api/absencerequest")
-
-    let createAbsenceRequest (client: HttpClient) (model: Handlers.AbsenceRequests.Types.CreateRequestInputModel) =
-        client.PutAsync($"/api/absencerequest", new StringContent(model |> Test.serialize))
-
-    let deleteAbsenceRequest (client: HttpClient) (id: int) =
-        client.DeleteAsync($"/api/absencerequest/{id}")

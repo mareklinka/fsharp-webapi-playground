@@ -2,7 +2,7 @@ namespace SeedProject.Functional.Infrastructure
 
 open FSharp.Control.Tasks
 
-open SeedProject.Functional
+open SeedProject.Functional.TestHost
 
 type TestHostFixture() as this =
     member val Host = null with get, set

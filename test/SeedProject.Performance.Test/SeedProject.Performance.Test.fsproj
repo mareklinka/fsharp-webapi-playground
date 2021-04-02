@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="sample.json" />
+    <Compile Include="BenchmarkConfig.fs" />
+    <Compile Include="AbsenceRequestApiBenchmark.fs" />
+    <Compile Include="BenchmarkComparison.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" Version="0.12.1" />
+    <PackageReference Include="Fsharp.data" Version="4.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="5.0.4" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\SeedProject.Host\SeedProject.Host.fsproj" />
+    <ProjectReference Include="..\SeedProject.Functional.TestHost\SeedProject.Functional.TestHost.fsproj" />
+  </ItemGroup>
+</Project>

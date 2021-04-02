@@ -7,7 +7,6 @@
   <ItemGroup>
     <Compile Include="TestModule.fs" />
     <Compile Include="Generators/Generators.fs" />
-    <Compile Include="TestServer.fs" />
     <Compile Include="Infrastructure/Combinators.fs" />
     <Compile Include="Infrastructure/TestHostFixture.fs" />
     <Compile Include="Infrastructure/TestHostCollection.fs" />
@@ -33,6 +32,6 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\SeedProject.Host\SeedProject.Host.fsproj" />
+    <ProjectReference Include="..\SeedProject.Functional.TestHost\SeedProject.Functional.TestHost.fsproj" />
   </ItemGroup>
 </Project>
