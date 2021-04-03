@@ -8,9 +8,7 @@ on:
 
 jobs:
   build:
-
     runs-on: windows-latest
-
     steps:
     - uses: actions/checkout@v2
     - name: Setup .NET
@@ -42,9 +40,17 @@ jobs:
       with:
         name: benchmark
         path: '.\benchmark\results\'
-    - name: Generate Architecture Diagram
-      run: dotnet run -c Release -p .\src\SeedProject.Architecture\
+  architecture:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.x
     - name: Generate Architecture Diagrams
+      run: dotnet run -c Release -p .\src\SeedProject.Architecture\
+    - name: Render Architecture Diagrams
       uses: cloudbees/plantuml-github-action@v1.1.0
       with:
         args: -v -tpng -o architecture architecture.puml
@@ -52,5 +58,4 @@ jobs:
       uses: actions/upload-artifact@v2.2.2
       with:
         name: architecture-diagrams
-        path: '.\architecture\'
-      
+        path: './architecture/' 
