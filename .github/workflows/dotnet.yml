@@ -26,7 +26,7 @@ jobs:
     - name: Test
       run: dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage" --settings .\test\coverlet.runsettings
     - name: Generate Coverage Report
-      run: reportgenerator "-reports:**/coverage.opencover.xml" "-targetdir:coveragereport" -reporttypes:Html
+      run: reportgenerator "-reports:**\coverage.opencover.xml" "-targetdir:coveragereport" -reporttypes:Html
     - name: Upload Coverage Files
       uses: actions/upload-artifact@v2.2.2
       with:
@@ -42,3 +42,15 @@ jobs:
       with:
         name: benchmark
         path: '.\benchmark\results\'
+    - name: Generate Architecture Diagram
+      run: dotnet run -c Release -p .\src\SeedProject.Architecture\
+    - name: Generate Architecture Diagrams
+      uses: cloudbees/plantuml-github-action@v1.1.0
+      with:
+        args: -v -tpng -o architecture architecture.puml
+    - name: Upload Architecture Diagrams
+      uses: actions/upload-artifact@v2.2.2
+      with:
+        name: architecture-diagrams
+        path: '.\architecture\'
+      
