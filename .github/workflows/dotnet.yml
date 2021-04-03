@@ -49,7 +49,7 @@ jobs:
       with:
         dotnet-version: 5.0.x
     - name: Generate Architecture Diagrams
-      run: dotnet run -c Release -p .\src\SeedProject.Architecture\
+      run: dotnet run -c Release -p ./src/SeedProject.Architecture/
     - name: Render Architecture Diagrams
       uses: cloudbees/plantuml-github-action@v1.1.0
       with:
