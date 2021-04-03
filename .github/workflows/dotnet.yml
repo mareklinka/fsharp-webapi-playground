@@ -37,6 +37,7 @@ jobs:
     - name: Performance Test
       run: dotnet run -c Release -p .\test\SeedProject.Performance.Test\
     - name: Upload Benchmark Report
+      if: always()
       uses: actions/upload-artifact@v2.2.2
       with:
         name: benchmark
