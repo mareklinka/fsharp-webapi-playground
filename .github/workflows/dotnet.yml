@@ -32,8 +32,8 @@ jobs:
       with:
         name: coverage-files
         path: |
-          '**/coverage.opencover.xml'
-          './coveragereport/'
+          '**\coverage.opencover.xml'
+          '.\coveragereport\'
     - name: Performance Test
       run: dotnet run -c Release -p .\test\SeedProject.Performance.Test\
     - name: Upload Benchmark Report
@@ -41,4 +41,4 @@ jobs:
       uses: actions/upload-artifact@v2.2.2
       with:
         name: benchmark
-        path: './benchmark/results/'
+        path: '.\benchmark\results\'
