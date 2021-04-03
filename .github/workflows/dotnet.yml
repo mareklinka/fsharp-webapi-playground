@@ -1,0 +1,61 @@
+name: .NET
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.x
+    - name: Setup Coverage Report Generator
+      run: dotnet tool install --global dotnet-reportgenerator-globaltool
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore
+    - name: Test
+      run: dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage" --settings .\test\coverlet.runsettings
+    - name: Generate Coverage Report
+      run: reportgenerator "-reports:**\coverage.opencover.xml" "-targetdir:coveragereport" -reporttypes:Html
+    - name: Upload Coverage Files
+      uses: actions/upload-artifact@v2.2.2
+      with:
+        name: coverage-files
+        path: |
+          **\coverage.opencover.xml
+          .\coveragereport\
+    - name: Performance Test
+      run: dotnet run -c Release -p .\test\SeedProject.Performance.Test\
+    - name: Upload Benchmark Report
+      if: always()
+      uses: actions/upload-artifact@v2.2.2
+      with:
+        name: benchmark
+        path: '.\benchmark\results\'
+  architecture:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.x
+    - name: Generate Architecture Diagrams
+      run: dotnet run -c Release -p ./src/SeedProject.Architecture/
+    - name: Render Architecture Diagrams
+      uses: cloudbees/plantuml-github-action@v1.1.0
+      with:
+        args: -v -tpng -o architecture architecture.puml
+    - name: Upload Architecture Diagrams
+      uses: actions/upload-artifact@v2.2.2
+      with:
+        name: architecture-diagrams
+        path: './architecture/' 

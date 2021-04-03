@@ -5,7 +5,7 @@ module Constants =
     let WorkspaceName = "Structurizr Demo"
 
     [<Literal>]
-    let EnterpriseName = "Sample Inc."
+    let EnterpriseName = "Sample Inc"
 
     [<Literal>]
     let SystemName = "Core System vNext"
