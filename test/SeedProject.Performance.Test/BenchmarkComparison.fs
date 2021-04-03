@@ -8,7 +8,12 @@ module BenchmarkComparison =
     type private ResultJson =
         JsonProvider<"sample.json", EmbeddedResource="SeedProject.Performance.Test, sample.json", InferTypesFromValues=false>
 
-    let private isOverThreshhold timeThreshold memoryThreshold (old: ResultJson.Benchmark) (current: ResultJson.Benchmark) =
+    let private isOverThreshhold
+        timeThreshold
+        memoryThreshold
+        (old: ResultJson.Benchmark)
+        (current: ResultJson.Benchmark)
+        =
         let compare o c t = c >= o * t
 
         compare old.Statistics.Mean current.Statistics.Mean timeThreshold
@@ -58,10 +63,7 @@ module BenchmarkComparison =
              / oldBenchmark.Memory.BytesAllocatedPerOperation)
             memoryThreshold
 
-    let private compareBenchmarkFile file original current =
-        let timeThreshold = 1.2M
-        let memoryThreshold = 1.2M
-
+    let private compareBenchmarkFile durationThreshold allocationThreshold file original current =
         let intersection =
             Set.intersect (original |> toNameSet) (current |> toNameSet)
 
@@ -76,10 +78,10 @@ module BenchmarkComparison =
                     let currentBenchmark =
                         current |> Array.find (fun b -> b.FullName = name)
 
-                    match isOverThreshhold timeThreshold memoryThreshold oldBenchmark currentBenchmark with
+                    match isOverThreshhold durationThreshold allocationThreshold oldBenchmark currentBenchmark with
                     | false -> state
                     | true ->
-                        printDegradation timeThreshold memoryThreshold name oldBenchmark currentBenchmark
+                        printDegradation durationThreshold allocationThreshold name oldBenchmark currentBenchmark
                         state + 1)
                 0
 
@@ -92,7 +94,7 @@ module BenchmarkComparison =
 
         degradationsInFile, isSetDifferent
 
-    let private compareBenchmarkFiles originalMap currentMap =
+    let private compareBenchmarkFiles durationThreshold allocationThreshold originalMap currentMap =
         let fileIntersection =
             Set.intersect (originalMap |> toFileSet) (currentMap |> toFileSet)
 
@@ -104,7 +106,7 @@ module BenchmarkComparison =
                     let current = currentMap |> Map.find file
 
                     let (degradationsInFile, isSetDifferent) =
-                        compareBenchmarkFile file original current
+                        compareBenchmarkFile durationThreshold allocationThreshold file original current
 
                     (degradations + degradationsInFile, setDifference || isSetDifferent))
                 (0, false)
@@ -127,24 +129,18 @@ module BenchmarkComparison =
                 (fun f ->
                     printfn "Loading file %s" f
                     let original = ResultJson.Load(f)
-                    f, original.Benchmarks)
+                    f |> Path.GetFileName, original.Benchmarks)
             |> Map.ofSeq
 
-    let runBenchmarkWithComparison benchmarkRunner =
-        let directory =
-            Path.Combine(Directory.GetCurrentDirectory(), "benchmark\\results")
-
-        let originalMap = loadBenchmarkResults directory
-
-        Directory.GetFiles(directory)
-        |> Array.iter (fun f -> File.Delete f)
+    let runBenchmarkWithComparison baselinePath currentPath durationThreshold allocationThreshold benchmarkRunner =
+        let originalMap = loadBenchmarkResults baselinePath
 
         benchmarkRunner ()
 
-        let currentMap = loadBenchmarkResults directory
+        let currentMap = loadBenchmarkResults currentPath
 
         let (totalDegradations, setDifference) =
-            compareBenchmarkFiles originalMap currentMap
+            compareBenchmarkFiles durationThreshold allocationThreshold originalMap currentMap
 
         printfn "Degradations: %i" totalDegradations
         (totalDegradations, setDifference)

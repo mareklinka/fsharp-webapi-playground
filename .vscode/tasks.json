@@ -43,14 +43,16 @@
             "args": [
                 "run",
                 "-c",
-                "Release"
+                "Release",
+                "-p",
+                "test/SeedProject.Performance.Test",
+                "--",
+                "--filter",
+                "*"
             ],
             "group": "test",
             "presentation": {
                 "reveal": "always"
-            },
-            "options": {
-                "cwd": "test/SeedProject.Performance.Test"
             },
             "problemMatcher": "$msCompile"
         },
@@ -62,15 +64,16 @@
                 "run",
                 "-c",
                 "Release",
+                "-p",
+                "test/SeedProject.Performance.Test",
                 "--",
-                "-baseline"
+                "-baseline",
+                "--filter",
+                "*"
             ],
             "group": "none",
             "presentation": {
                 "reveal": "always"
-            },
-            "options": {
-                "cwd": "test/SeedProject.Performance.Test"
             },
             "problemMatcher": "$msCompile"
         }

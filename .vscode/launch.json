@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": ".NET Core Launch (web)",
+            "name": "WebApi",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
@@ -17,6 +17,16 @@
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development"
             }
+        },
+        {
+            "name": "PerformanceTests",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/test/SeedProject.Performance.Test/bin/Debug/net5.0/SeedProject.Performance.Test.dll",
+            "args": [],
+            "console": "integratedTerminal",
+            "stopAtEntry": false
         }
     ]
 }

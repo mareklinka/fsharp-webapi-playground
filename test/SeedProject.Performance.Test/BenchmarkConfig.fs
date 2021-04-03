@@ -8,7 +8,7 @@ open BenchmarkDotNet.Loggers
 open BenchmarkDotNet.Columns
 open BenchmarkDotNet.Engines
 
-type BenchmarkConfig() as this =
+type BenchmarkConfig(artifactsPath) as this =
     inherit BenchmarkDotNet.Configs.ManualConfig()
 
     let job =
@@ -29,5 +29,5 @@ type BenchmarkConfig() as this =
             .AddExporter(HtmlExporter.Default)
             .AddLogger(ConsoleLogger.Unicode)
             .AddColumnProvider(DefaultColumnProviders.Instance)
-            .WithArtifactsPath(".\\benchmark")
+            .WithArtifactsPath(artifactsPath)
         |> ignore
