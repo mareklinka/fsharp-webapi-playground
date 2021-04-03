@@ -1,5 +1,5 @@
 {
-   "Title":"SeedProject.Performance.Test.AbsenceRequestApiBenchmark-20210402-215726",
+   "Title":"SeedProject.Performance.Test.AbsenceRequestApiBenchmark-20210403-091021",
    "HostEnvironmentInfo":{
       "BenchmarkDotNetCaption":"BenchmarkDotNet",
       "BenchmarkDotNetVersion":"0.12.1",
@@ -30,51 +30,51 @@
          "FullName":"SeedProject.Performance.Test.AbsenceRequestApiBenchmark.CreateNewRequest",
          "Statistics":{
             "OriginalValues":[
-               5589500,28124500,2086000,2178100,2166400,2046600,2230800,2102000,2217300,2256000,2127500,2338600,2182300,1919300,2031000,2437600,2433600,2275000,1769500,1829700
+               5757200,28384600,2587100,2657900,2616800,2848800,2939800,2711900,2781800,2759500,2092700,2840800,2547000,2340400,2526800,2493000,2534800,2140600,2274300,2537500
             ],
             "N":20,
-            "Min":1769500,
-            "LowerFence":1754025,
-            "Q1":2076150,
-            "Median":2180200,
-            "Mean":3617065,
-            "Q3":2290900,
-            "UpperFence":2613025,
-            "Max":28124500,
-            "InterquartileRange":214750,
+            "Min":2092700,
+            "LowerFence":2101050,
+            "Q1":2518350,
+            "Median":2601950,
+            "Mean":4018665,
+            "Q3":2796550,
+            "UpperFence":3213850,
+            "Max":28384600,
+            "InterquartileRange":278200,
             "LowerOutliers":[
-               
+               2092700
             ],
             "UpperOutliers":[
-               5589500,28124500
+               5757200,28384600
             ],
             "AllOutliers":[
-               5589500,28124500
+               2092700,5757200,28384600
             ],
-            "StandardError":1301851.2156535722,
-            "Variance":33896331753973.684,
-            "StandardDeviation":5822055.629584252,
-            "Skewness":3.716138757338971,
-            "Kurtosis":15.70308548752937,
+            "StandardError":1293242.6742042247,
+            "Variance":33449532287657.895,
+            "StandardDeviation":5783557.061848521,
+            "Skewness":3.7248747614671682,
+            "Kurtosis":15.756054505560067,
             "ConfidenceInterval":{
                "N":20,
-               "Mean":3617065,
-               "StandardError":1301851.2156535722,
+               "Mean":4018665,
+               "StandardError":1293242.6742042247,
                "Level":12,
-               "Margin":5055616.63031194,
-               "Lower":-1438551.6303119399,
-               "Upper":8672681.63031194
+               "Margin":5022186.170063684,
+               "Lower":-1003521.1700636838,
+               "Upper":9040851.170063684
             },
             "Percentiles":{
-               "P0":1769500,
-               "P25":2076150,
-               "P50":2180200,
-               "P67":2249196,
-               "P80":2357600,
-               "P85":2434200,
-               "P90":2752790.0000000047,
-               "P95":6716250.000000017,
-               "P100":28124500
+               "P0":2092700,
+               "P25":2518350,
+               "P50":2601950,
+               "P67":2746648,
+               "P80":2842400,
+               "P85":2862450,
+               "P90":3221540.0000000037,
+               "P95":6888570.000000017,
+               "P100":28384600
             }
          },
          "Memory":{
@@ -82,7 +82,7 @@
             "Gen1Collections":0,
             "Gen2Collections":0,
             "TotalOperations":1,
-            "BytesAllocatedPerOperation":224480
+            "BytesAllocatedPerOperation":224888
          }
       },{
          "DisplayInfo":"AbsenceRequestApiBenchmark.GetEmptyRequestList: MacroBenchmark(Server=True, InvocationCount=1, IterationCount=20, LaunchCount=1, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=1)",
@@ -94,51 +94,51 @@
          "FullName":"SeedProject.Performance.Test.AbsenceRequestApiBenchmark.GetEmptyRequestList",
          "Statistics":{
             "OriginalValues":[
-               2495900,2800100,1029500,1013700,926500,1097200,1051800,937900,1147600,994200,882600,1096000,1013100,1066200,850400,890000,836000,768900,920300,925700
+               2733300,2785200,1398000,1022800,1124700,1254500,1068900,872200,1059300,1095200,1060700,1115900,1278200,1237600,1578900,1402900,1738000,2405700,994100,948400
             ],
             "N":20,
-            "Min":768900,
-            "LowerFence":671337.5,
-            "Q1":912725,
-            "Median":1003650,
-            "Mean":1137180,
-            "Q3":1073650,
-            "UpperFence":1315037.5,
-            "Max":2800100,
-            "InterquartileRange":160925,
+            "Min":872200,
+            "LowerFence":480525,
+            "Q1":1060350,
+            "Median":1181150,
+            "Mean":1408725,
+            "Q3":1446900,
+            "UpperFence":2026725,
+            "Max":2785200,
+            "InterquartileRange":386550,
             "LowerOutliers":[
                
             ],
             "UpperOutliers":[
-               2495900,2800100
+               2405700,2733300,2785200
             ],
             "AllOutliers":[
-               2495900,2800100
+               2405700,2733300,2785200
             ],
-            "StandardError":118101.04518455459,
-            "Variance":278957137473.6842,
-            "StandardDeviation":528163.9304928766,
-            "Skewness":2.3512315963902406,
-            "Kurtosis":7.135480795535697,
+            "StandardError":128706.14181455939,
+            "Variance":331305418815.7895,
+            "StandardDeviation":575591.3644381659,
+            "Skewness":1.4077290351728957,
+            "Kurtosis":3.606074755391077,
             "ConfidenceInterval":{
                "N":20,
-               "Mean":1137180,
-               "StandardError":118101.04518455459,
+               "Mean":1408725,
+               "StandardError":128706.14181455939,
                "Level":12,
-               "Margin":458634.29008859926,
-               "Lower":678545.7099114007,
-               "Upper":1595814.2900885993
+               "Margin":499818.1844108093,
+               "Lower":908906.8155891907,
+               "Upper":1908543.1844108093
             },
             "Percentiles":{
-               "P0":768900,
-               "P25":912725,
-               "P50":1003650,
-               "P67":1045779,
-               "P80":1096240,
-               "P85":1104760,
-               "P90":1282430.0000000019,
-               "P95":2511110,
-               "P100":2800100
+               "P0":872200,
+               "P25":1060350,
+               "P50":1181150,
+               "P67":1365654,
+               "P80":1610720.0000000002,
+               "P85":1838154.999999999,
+               "P90":2438460.0000000005,
+               "P95":2735895,
+               "P100":2785200
             }
          },
          "Memory":{
@@ -146,7 +146,7 @@
             "Gen1Collections":0,
             "Gen2Collections":0,
             "TotalOperations":1,
-            "BytesAllocatedPerOperation":64568
+            "BytesAllocatedPerOperation":64216
          }
       }
    ]
