@@ -8,15 +8,12 @@ module BenchmarkComparison =
     type private ResultJson =
         JsonProvider<"sample.json", EmbeddedResource="SeedProject.Performance.Test, sample.json", InferTypesFromValues=false>
 
-    let private isOverThreshhold (old: ResultJson.Benchmark) (current: ResultJson.Benchmark) =
+    let private isOverThreshhold timeThreshold memoryThreshold (old: ResultJson.Benchmark) (current: ResultJson.Benchmark) =
         let compare o c t = c >= o * t
 
-        let timeThreshhold = 1.2M
-        let memoryThreshhold = 1.2M
-
-        compare old.Statistics.Mean current.Statistics.Mean timeThreshhold
-        || compare old.Statistics.Median current.Statistics.Median timeThreshhold
-        || compare old.Memory.BytesAllocatedPerOperation current.Memory.BytesAllocatedPerOperation memoryThreshhold
+        compare old.Statistics.Mean current.Statistics.Mean timeThreshold
+        || compare old.Statistics.Median current.Statistics.Median timeThreshold
+        || compare old.Memory.BytesAllocatedPerOperation current.Memory.BytesAllocatedPerOperation memoryThreshold
 
     let private toFileSet =
         Map.toSeq
@@ -28,6 +25,8 @@ module BenchmarkComparison =
         >> Set.ofSeq
 
     let private printDegradation
+        timeThreshold
+        memoryThreshold
         benchmarkName
         (oldBenchmark: ResultJson.Benchmark)
         (currentBenchmark: ResultJson.Benchmark)
@@ -48,15 +47,21 @@ module BenchmarkComparison =
             currentBenchmark.Memory.BytesAllocatedPerOperation
 
         printfn
-            "Ratios: %.3f / %.3f / %.3f"
+            "Ratios: %.3f (limit %.3f) / %.3f (limit %.3f) / %.3f (limit %.3f)"
             (currentBenchmark.Statistics.Mean
              / oldBenchmark.Statistics.Mean)
+            timeThreshold
             (currentBenchmark.Statistics.Median
              / oldBenchmark.Statistics.Median)
+            timeThreshold
             (currentBenchmark.Memory.BytesAllocatedPerOperation
              / oldBenchmark.Memory.BytesAllocatedPerOperation)
+            memoryThreshold
 
     let private compareBenchmarkFile file original current =
+        let timeThreshold = 1.2M
+        let memoryThreshold = 1.2M
+
         let intersection =
             Set.intersect (original |> toNameSet) (current |> toNameSet)
 
@@ -71,10 +76,10 @@ module BenchmarkComparison =
                     let currentBenchmark =
                         current |> Array.find (fun b -> b.FullName = name)
 
-                    match isOverThreshhold oldBenchmark currentBenchmark with
+                    match isOverThreshhold timeThreshold memoryThreshold oldBenchmark currentBenchmark with
                     | false -> state
                     | true ->
-                        printDegradation name oldBenchmark currentBenchmark
+                        printDegradation timeThreshold memoryThreshold name oldBenchmark currentBenchmark
                         state + 1)
                 0
 
